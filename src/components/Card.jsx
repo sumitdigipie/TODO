@@ -9,6 +9,9 @@ const Card = ({
   handleTaskProgress,
   isCompleted,
 }) => {
+
+  console.log('test push')
+
   return (
     <div
       className={`border bg-gray-200 rounded-md p-4 ${
