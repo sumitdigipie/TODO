@@ -7,6 +7,7 @@ import * as Yup from "yup";
 const initialValues = {
   title: "",
   description: "",
+  isCompleted: false,
 };
 
 function App() {
@@ -53,7 +54,14 @@ function App() {
     formik.setValues({
       title: item?.title,
       description: item?.description,
+      isCompleted: item?.isCompleted || false,
     });
+  };
+
+  const handleTaskProgress = (index) => {
+    const updatedData = [...data];
+    updatedData[index].isCompleted = !updatedData[index].isCompleted;
+    setData(updatedData);
   };
 
   const { handleChange, handleBlur, handleSubmit, values } = formik;
@@ -71,6 +79,7 @@ function App() {
   }, [data]);
 
   console.log("data", data);
+
   return (
     <div className="flex p-6 gap-10">
       <form onSubmit={handleSubmit} className="w-1/2 space-y-4">
@@ -102,11 +111,13 @@ function App() {
       <div className="w-1/2 space-y-4">
         {data.map((item, index) => (
           <Card
+            isCompleted={item.isCompleted}
             key={index}
             title={item.title}
             description={item.description}
             handleDelete={() => handleDelete(index)}
             handleEdit={() => handleEdit(item, index)}
+            handleTaskProgress={() => handleTaskProgress(index)}
           />
         ))}
       </div>
