@@ -25,7 +25,7 @@ function App() {
     initialValues,
     validationSchema,
     onSubmit: (values, { resetForm }) => {
-      const newItem = { ...values, status: "Todo" };
+      const newItem = { ...values, status: "Todo", currentStep: 0 };
 
       if (isEditing) {
         const updatedData = [...data];
@@ -62,6 +62,7 @@ function App() {
   };
 
   const handleNext = (index) => {
+    console.log("object");
     setData((prevData) => {
       const updatedData = [...prevData];
       const currentItem = updatedData[index];
@@ -79,6 +80,7 @@ function App() {
   };
 
   const handlePrevious = (index) => {
+    console.log("object");
     setData((prevData) => {
       const updatedData = [...prevData];
       const currentItem = updatedData[index];
@@ -117,6 +119,7 @@ function App() {
       } else if (status === "Completed") {
         updatedData[dragCardIndex].currentStep = 2;
       }
+
       return updatedData;
     });
 
@@ -140,6 +143,7 @@ function App() {
   const inProgressTasks = data.filter((item) => item.status === "InProgress");
   const completedTasks = data.filter((item) => item.status === "Completed");
 
+  console.log("item[0].currentStep", data[0]);
   return (
     <div className="min-h-screen p-8 bg-gray-100">
       <div className="flex justify-center mb-10">
