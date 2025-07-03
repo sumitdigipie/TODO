@@ -10,10 +10,12 @@ const Card = ({
   handleNext,
   handlePrevious,
   handleDisable,
+  onDragStart,
 }) => {
-  console.log("handleDisable", handleDisable);
   return (
     <div
+      draggable
+      onDragStart={(e) => onDragStart(e)}
       className={`border bg-gray-200 rounded-md p-4 ${
         isCompleted ? "border-green-500 bg-green-100" : "border-gray-300"
       }`}
@@ -70,6 +72,7 @@ Card.propTypes = {
   description: PropTypes.string,
   handleDisable: PropTypes.number,
   handleDelete: PropTypes.func,
+  onDragStart: PropTypes.func,
   handleEdit: PropTypes.func,
   handlePrevious: PropTypes.func,
   handleNext: PropTypes.func,

@@ -14,6 +14,7 @@ function App() {
   const [data, setData] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+  const [dragCardIndex, setDragCardIndex] = useState(null);
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
@@ -76,7 +77,7 @@ function App() {
       return updatedData;
     });
   };
-  console.log("data", data);
+
   const handlePrevious = (index) => {
     setData((prevData) => {
       const updatedData = [...prevData];
@@ -92,6 +93,34 @@ function App() {
 
       return updatedData;
     });
+  };
+
+  const handleDragStart = (index) => {
+    setDragCardIndex(index);
+  };
+
+  const allowDrop = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (status) => {
+    if (dragCardIndex === null) return;
+
+    setData((prevData) => {
+      const updatedData = [...prevData];
+      updatedData[dragCardIndex].status = status;
+
+      if (status === "Todo") {
+        updatedData[dragCardIndex].currentStep = 0;
+      } else if (status === "InProgress") {
+        updatedData[dragCardIndex].currentStep = 1;
+      } else if (status === "Completed") {
+        updatedData[dragCardIndex].currentStep = 2;
+      }
+      return updatedData;
+    });
+
+    setDragCardIndex(null);
   };
 
   const { handleChange, handleBlur, handleSubmit, values } = formik;
@@ -142,7 +171,11 @@ function App() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="border p-6 space-y-3">
+        <div
+          onDragOver={allowDrop}
+          onDrop={() => handleDrop("Todo")}
+          className="border p-6 space-y-3"
+        >
           <h2 className="text-xl font-semibold mb-4 text-center">Todo</h2>
           {todoTasks.map((item, index) => (
             <Card
@@ -156,10 +189,15 @@ function App() {
               handleTaskProgress={() => toggleTaskCompletion(index)}
               handleNext={() => handleNext(data.indexOf(item))}
               handlePrevious={() => handlePrevious(data.indexOf(item))}
+              onDragStart={() => handleDragStart(data.indexOf(item))}
             />
           ))}
         </div>
-        <div className="border p-6 space-y-3">
+        <div
+          onDragOver={allowDrop}
+          onDrop={() => handleDrop("InProgress")}
+          className="border p-6 space-y-3"
+        >
           <h2 className="text-xl font-semibold mb-4 text-center">
             In Progress
           </h2>
@@ -175,10 +213,15 @@ function App() {
               handleTaskProgress={() => toggleTaskCompletion(index)}
               handleNext={() => handleNext(data.indexOf(item))}
               handlePrevious={() => handlePrevious(data.indexOf(item))}
+              onDragStart={() => handleDragStart(data.indexOf(item))}
             />
           ))}
         </div>
-        <div className="border p-6 space-y-3">
+        <div
+          onDragOver={allowDrop}
+          onDrop={() => handleDrop("Completed")}
+          className="border p-6 space-y-3"
+        >
           <h2 className="text-xl font-semibold mb-4 text-center">Completed</h2>
           {completedTasks.map((item, index) => (
             <Card
@@ -192,6 +235,7 @@ function App() {
               handleTaskProgress={() => toggleTaskCompletion(index)}
               handleNext={() => handleNext(data.indexOf(item))}
               handlePrevious={() => handlePrevious(data.indexOf(item))}
+              onDragStart={() => handleDragStart(data.indexOf(item))}
             />
           ))}
         </div>
