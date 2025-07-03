@@ -6,18 +6,17 @@ const Card = ({
   description,
   handleEdit,
   handleDelete,
-  handleTaskProgress,
   isCompleted,
+  handleNext,
+  handlePrevious,
+  handleDisable,
 }) => {
-
-  console.log('test push')
-
+  console.log("handleDisable", handleDisable);
   return (
     <div
       className={`border bg-gray-200 rounded-md p-4 ${
         isCompleted ? "border-green-500 bg-green-100" : "border-gray-300"
-      }
-`}
+      }`}
     >
       <div className="flex items-center justify-between">
         <div>
@@ -45,13 +44,22 @@ const Card = ({
             <Trash2 />
           </button>
         </div>
-        <button
-          onClick={handleTaskProgress}
-          type="button"
-          className="px-4 py-1 bg-black text-white rounded"
-        >
-          {isCompleted ? "Incomplete" : "Complete"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            disabled={handleDisable == 0 ? true : false}
+            onClick={handlePrevious}
+            className="bg-blue-500 px-4 py-2 rounded text-cyan-50 ga"
+          >
+            Previous
+          </button>
+          <button
+            disabled={handleDisable < 2 ? false : true}
+            onClick={handleNext}
+            className="bg-black px-4 py-2 rounded text-cyan-50 mr-3"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -60,9 +68,13 @@ const Card = ({
 Card.propTypes = {
   title: PropTypes.string,
   description: PropTypes.string,
+  handleDisable: PropTypes.number,
   handleDelete: PropTypes.func,
   handleEdit: PropTypes.func,
-  handleTaskProgress: PropTypes.func,
+  handlePrevious: PropTypes.func,
+  handleNext: PropTypes.func,
+  isCompleted: PropTypes.bool,
+  index: PropTypes.number,
 };
 
 export default Card;
