@@ -3,6 +3,7 @@ import "./App.css";
 import Card from "./components/Card";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import Modal from "./components/Modal";
 
 const initialValues = {
   title: "",
@@ -15,6 +16,7 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [dragCardIndex, setDragCardIndex] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
@@ -36,6 +38,7 @@ function App() {
       } else {
         setData([...data, newItem]);
       }
+      setIsModalOpen(false);
       resetForm();
     },
   });
@@ -51,18 +54,7 @@ function App() {
     }
   };
 
-  const handleEdit = (item, index) => {
-    setIsEditing(true);
-    setEditIndex(index);
-    formik.setValues({
-      title: item?.title,
-      description: item?.description,
-      isCompleted: item?.isCompleted || false,
-    });
-  };
-
   const handleNext = (index) => {
-    console.log("object");
     setData((prevData) => {
       const updatedData = [...prevData];
       const currentItem = updatedData[index];
@@ -80,7 +72,6 @@ function App() {
   };
 
   const handlePrevious = (index) => {
-    console.log("object");
     setData((prevData) => {
       const updatedData = [...prevData];
       const currentItem = updatedData[index];
@@ -126,7 +117,15 @@ function App() {
     setDragCardIndex(null);
   };
 
-  const { handleChange, handleBlur, handleSubmit, values } = formik;
+  const handleInlineUpdate = (index, field, value) => {
+    setData((prevData) => {
+      const updated = [...prevData];
+      updated[index][field] = value;
+      return updated;
+    });
+  };
+
+  const { handleChange, handleSubmit, values } = formik;
 
   useEffect(() => {
     const storedTodos = localStorage.getItem("data");
@@ -143,44 +142,23 @@ function App() {
   const inProgressTasks = data.filter((item) => item.status === "InProgress");
   const completedTasks = data.filter((item) => item.status === "Completed");
 
-  console.log("item[0].currentStep", data[0]);
   return (
     <div className="min-h-screen p-8 bg-gray-100">
-      <div className="flex justify-center mb-10">
-        <form onSubmit={handleSubmit} className="space-y-7 w-full max-w-xl">
-          <input
-            className="w-full p-3 border border-gray-500 rounded"
-            type="text"
-            name="title"
-            placeholder="Enter title of post"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            value={values.title}
-          />
-          <textarea
-            className="w-full p-3 border border-gray-500 rounded"
-            name="description"
-            placeholder="Enter description of post"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            value={values.description}
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            {isEditing ? "Update" : "Submit"}
-          </button>
-        </form>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
         <div
           onDragOver={allowDrop}
           onDrop={() => handleDrop("Todo")}
-          className="border p-6 space-y-3"
+          className="border p-6 space-y-3 rounded"
         >
-          <h2 className="text-xl font-semibold mb-4 text-center">Todo</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold mb-4 text-center">Todo</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-black px-4 py-2 rounded text-cyan-50 mr-3"
+            >
+              Add
+            </button>
+          </div>
           {todoTasks.map((item, index) => (
             <Card
               key={index}
@@ -188,7 +166,9 @@ function App() {
               handleDisable={item.currentStep}
               description={item.description}
               isCompleted={item.isCompleted}
-              handleEdit={() => handleEdit(item, data.indexOf(item))}
+              onUpdate={(field, value) =>
+                handleInlineUpdate(data.indexOf(item), field, value)
+              }
               handleDelete={() => handleDelete(data.indexOf(item))}
               handleTaskProgress={() => toggleTaskCompletion(index)}
               handleNext={() => handleNext(data.indexOf(item))}
@@ -200,11 +180,9 @@ function App() {
         <div
           onDragOver={allowDrop}
           onDrop={() => handleDrop("InProgress")}
-          className="border p-6 space-y-3"
+          className="border p-6 space-y-7 rounded"
         >
-          <h2 className="text-xl font-semibold mb-4 text-center">
-            In Progress
-          </h2>
+          <h2 className="text-xl font-semibold mb-4">In Progress</h2>
           {inProgressTasks.map((item, index) => (
             <Card
               key={index}
@@ -212,7 +190,9 @@ function App() {
               title={item.title}
               description={item.description}
               isCompleted={item.isCompleted}
-              handleEdit={() => handleEdit(item, data.indexOf(item))}
+              onUpdate={(field, value) =>
+                handleInlineUpdate(data.indexOf(item), field, value)
+              }
               handleDelete={() => handleDelete(data.indexOf(item))}
               handleTaskProgress={() => toggleTaskCompletion(index)}
               handleNext={() => handleNext(data.indexOf(item))}
@@ -224,9 +204,9 @@ function App() {
         <div
           onDragOver={allowDrop}
           onDrop={() => handleDrop("Completed")}
-          className="border p-6 space-y-3"
+          className="border p-6 space-y-3 rounded"
         >
-          <h2 className="text-xl font-semibold mb-4 text-center">Completed</h2>
+          <h2 className="text-xl font-semibold mb-4">Completed</h2>
           {completedTasks.map((item, index) => (
             <Card
               key={index}
@@ -234,7 +214,9 @@ function App() {
               title={item.title}
               description={item.description}
               isCompleted={item.isCompleted}
-              handleEdit={() => handleEdit(item, data.indexOf(item))}
+              onUpdate={(field, value) =>
+                handleInlineUpdate(data.indexOf(item), field, value)
+              }
               handleDelete={() => handleDelete(data.indexOf(item))}
               handleTaskProgress={() => toggleTaskCompletion(index)}
               handleNext={() => handleNext(data.indexOf(item))}
@@ -244,6 +226,15 @@ function App() {
           ))}
         </div>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        values={values}
+        handleChange={handleChange}
+        isEditing={isEditing}
+      />
     </div>
   );
 }
