@@ -45,7 +45,6 @@ const Tasks = () => {
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       const userId = auth.currentUser.uid;
-
       if (!userId) {
         console.error("User is not authenticated");
         return;

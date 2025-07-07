@@ -1,27 +1,26 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { auth } from "../../firebase";
-import {
-  GoogleAuthProvider,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth";
-
 import { useNavigate } from "react-router-dom";
+import { auth } from "../../firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const initialValues = {
+  username: "",
   email: "",
   password: "",
 };
 
-const Login = () => {
+const Signup = () => {
   const navigate = useNavigate();
 
   const validationSchema = Yup.object({
+    username: Yup.string()
+      .min(3, "Username must be at least 3 characters")
+      .required("Username is required"),
     email: Yup.string()
       .matches(
-        /^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,}$/i,
+        /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
         "Invalid email format"
       )
       .required("Email is required"),
@@ -37,33 +36,16 @@ const Login = () => {
       const { email, password } = values;
 
       try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // localStorage.setItem("token", userCredential.user.accessToken);
-        navigate("/tasks");
+        await createUserWithEmailAndPassword(auth, email, password);
+        navigate("/");
       } catch (error) {
-        console.error("error", error);
-        alert(error.message);
+        console.error("Signup error:", error);
+        alert(error.message || "Signup failed");
       }
     },
   });
 
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
-      const user = result.user;
-
-      localStorage.setItem("token", user.accessToken);
-      navigate("/tasks");
-    } catch (error) {
-      console.error("Google login error", error);
-      alert("Google login failed. " + error.message);
-    }
-  };
-
-  const { handleChange, handleSubmit, values, errors, touched, handleBlur } =
+  const { handleSubmit, handleChange, handleBlur, values, touched, errors } =
     formik;
 
   return (
@@ -71,15 +53,29 @@ const Login = () => {
       <div className="w-full max-w-lg p-10 bg-white rounded-lg shadow-lg">
         <form onSubmit={handleSubmit}>
           <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-            Login
+            Signup
           </h1>
+          <div className="mb-4">
+            <input
+              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="text"
+              name="username"
+              placeholder="Enter your username"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.username}
+            />
+            {touched.username && errors.username && (
+              <div className="text-red-500 text-sm mt-1">{errors.username}</div>
+            )}
+          </div>
 
           <div className="mb-4">
             <input
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               type="text"
               name="email"
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               onChange={handleChange}
               onBlur={handleBlur}
               value={values.email}
@@ -108,40 +104,22 @@ const Login = () => {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-200"
           >
-            Login
+            Signup
           </button>
-          <div className="mt-2 flex items-center justify-center">
-            <span className=" text-center">
-              Don't have account ?{" "}
-              <span
-                className="cursor-pointer text-blue-400"
-                onClick={() => navigate("/signup")}
-              >
-                Signup
-              </span>
-            </span>
-          </div>
         </form>
 
         <div className="mt-4">
-          <div className="py-3 flex items-center text-sm text-gray-800 before:flex-1 before:border-t before:border-gray-200 before:me-6 after:flex-1 after:border-t after:border-gray-200 after:ms-6 dark:text-black dark:before:border-neutral-600 dark:after:border-neutral-600">
-            Or
-          </div>
-        </div>
-        <div className="mt-4">
           <div className="flex items-center justify-center w-full">
             <button
-              type="button"
-              onClick={handleGoogleLogin}
+              onClick={() => {
+                navigate("/");
+              }}
               className="px-4 py-2 border flex gap-2 border-slate-200 rounded-lg text-slate-700 hover:shadow transition duration-150"
             >
-              <img
-                className="w-6 h-6"
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                loading="lazy"
-                alt="google logo"
-              />
-              <span className="text-black">Login with Google</span>
+              <span className="text-black">
+                Already have an account?{" "}
+                <span className="underline">Login</span>
+              </span>
             </button>
           </div>
         </div>
@@ -150,4 +128,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
