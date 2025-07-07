@@ -1,23 +1,18 @@
-import React from "react";
-import { useState, useEffect } from "react";
-
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { auth } from "../firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  doc,
-  deleteDoc,
-} from "firebase/firestore";
-
-import { db } from "../firebase";
-
 import Card from "../components/Card";
 import Modal from "../components/Modal";
 import Header from "../components/Header";
+
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchTodos,
+  addTodo,
+  deleteTodo,
+  updateTodo,
+} from "../store/slices/todoSlice";
 
 const initialValues = {
   title: "",
@@ -26,12 +21,13 @@ const initialValues = {
 };
 
 const Tasks = () => {
-  const [data, setData] = useState([]);
+  const dispatch = useDispatch();
+  const { todoList, email } = useSelector((state) => state.todos);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [dragCardIndex, setDragCardIndex] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
   const [userID, setUserID] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
 
@@ -44,40 +40,23 @@ const Tasks = () => {
     initialValues,
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
-      const userId = auth.currentUser.uid;
-      if (!userId) {
+      if (!userID) {
         console.error("User is not authenticated");
         return;
       }
 
       if (isEditing) {
-        const taskId = data[editIndex].id;
-
+        const taskId = todoList[editIndex]?.id;
         if (!taskId) {
-          console.error("Cannot update Firestore: Task ID is missing.");
+          console.error("Missing Task ID for edit.");
           return;
         }
-        const updatedData = [...data];
-        updatedData[editIndex] = {
-          ...updatedData[editIndex],
-          ...values,
-        };
-        setData(updatedData);
 
+        dispatch(updateTodo({ id: taskId, updates: values }));
         setIsEditing(false);
         setEditIndex(null);
       } else {
-        const newItem = { ...values, status: "Todo", currentStep: 0 };
-
-        try {
-          const docRef = await addDoc(
-            collection(db, "users", userId, "tasks"),
-            newItem
-          );
-          setData((prev) => [...prev, { ...newItem, id: docRef.id }]);
-        } catch (err) {
-          console.error("Error adding task to Firestore:", err);
-        }
+        dispatch(addTodo(values));
       }
 
       setIsModalOpen(false);
@@ -85,67 +64,46 @@ const Tasks = () => {
     },
   });
 
-  const updateTaskInFirestore = async (taskId, updatedFields) => {
-    try {
-      const taskRef = doc(db, "users", userID, "tasks", taskId);
-      await updateDoc(taskRef, updatedFields);
-    } catch (err) {
-      console.error("Error updating task in Firestore:", err);
-    }
-  };
-  const handleDelete = async (indexToDelete) => {
-    const taskToDelete = data[indexToDelete];
-
-    try {
-      await deleteDoc(doc(db, "users", userID, "tasks", taskToDelete.id));
-      const updatedData = data.filter((_, index) => index !== indexToDelete);
-      setData(updatedData);
-      if (isEditing && indexToDelete === editIndex) {
-        formik.resetForm();
-        setIsEditing(false);
-        setEditIndex(null);
-      }
-    } catch (err) {
-      console.error("Error deleting task from Firestore:", err);
+  const handleDelete = (index) => {
+    const task = todoList[index];
+    if (task?.id) {
+      dispatch(deleteTodo(task.id));
     }
   };
 
-  const handleNext = async (index) => {
-    const updatedData = [...data];
-    const task = updatedData[index];
+  const handleNext = (index) => {
+    const task = todoList[index];
+    if (!task) return;
+    let status = task.status;
+    let currentStep = task.currentStep;
 
-    if (task.status === "Todo") {
-      task.status = "InProgress";
-      task.currentStep = 1;
-    } else if (task.status === "InProgress") {
-      task.status = "Completed";
-      task.currentStep = 2;
+    if (status === "Todo") {
+      status = "InProgress";
+      currentStep = 1;
+    } else if (status === "InProgress") {
+      status = "Completed";
+      currentStep = 2;
     }
 
-    setData(updatedData);
-    await updateTaskInFirestore(task.id, {
-      status: task.status,
-      currentStep: task.currentStep,
-    });
+    dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
   };
 
-  const handlePrevious = async (index) => {
-    const updatedData = [...data];
-    const task = updatedData[index];
+  const handlePrevious = (index) => {
+    const task = todoList[index];
+    if (!task) return;
 
-    if (task.status === "Completed") {
-      task.status = "InProgress";
-      task.currentStep = 1;
-    } else if (task.status === "InProgress") {
-      task.status = "Todo";
-      task.currentStep = 0;
+    let status = task.status;
+    let currentStep = task.currentStep;
+
+    if (status === "Completed") {
+      status = "InProgress";
+      currentStep = 1;
+    } else if (status === "InProgress") {
+      status = "Todo";
+      currentStep = 0;
     }
 
-    setData(updatedData);
-    await updateTaskInFirestore(task.id, {
-      status: task.status,
-      currentStep: task.currentStep,
-    });
+    dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
   };
 
   const handleDragStart = (index) => {
@@ -156,54 +114,28 @@ const Tasks = () => {
     e.preventDefault();
   };
 
-  const handleDrop = async (status) => {
+  const handleDrop = (status) => {
     if (dragCardIndex === null) return;
 
-    const updatedData = [...data];
-    const task = updatedData[dragCardIndex];
+    const task = todoList[dragCardIndex];
+    const currentStep = status === "Todo" ? 0 : status === "InProgress" ? 1 : 2;
 
-    task.status = status;
-    task.currentStep = status === "Todo" ? 0 : status === "InProgress" ? 1 : 2;
-
-    setData(updatedData);
-    await updateTaskInFirestore(task.id, {
-      status: task.status,
-      currentStep: task.currentStep,
-    });
+    dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
 
     setDragCardIndex(null);
   };
 
   const handleInlineUpdate = (index, field, value) => {
-    const updatedData = [...data];
-    updatedData[index][field] = value;
-    setData(updatedData);
+    const task = todoList[index];
+    if (!task?.id) return;
 
-    updateTaskInFirestore(updatedData[index].id, {
-      [field]: value,
-    });
+    dispatch(updateTodo({ id: task.id, updates: { [field]: value } }));
   };
-
-  const fetchTasks = async () => {
-    if (userID) {
-      const querySnapshot = await getDocs(
-        collection(db, "users", userID, "tasks")
-      );
-      const tasks = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setData(tasks);
-    }
-  };
-
-  const { handleChange, handleSubmit, values } = formik;
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        setUserID(user?.uid);
-        setUserEmail(user?.email);
+        setUserID(user.uid);
         setIsAuth(true);
       } else {
         setIsAuth(false);
@@ -215,23 +147,26 @@ const Tasks = () => {
 
   useEffect(() => {
     if (userID) {
-      fetchTasks();
+      dispatch(fetchTodos());
     }
-  }, [userID]);
+  }, [userID, dispatch]);
 
-  const todoTasks = data.filter((item) => item.status === "Todo");
-  const inProgressTasks = data.filter((item) => item.status === "InProgress");
-  const completedTasks = data.filter((item) => item.status === "Completed");
+  const todoTasks = todoList.filter((item) => item.status === "Todo");
+  const inProgressTasks = todoList.filter(
+    (item) => item.status === "InProgress"
+  );
+  const completedTasks = todoList.filter((item) => item.status === "Completed");
+
+  const { handleChange, handleSubmit, values } = formik;
 
   return (
-    <div className="min-h-screen  bg-gray-100">
-      <div>
-        <Header isAuth={isAuth} setIsAuth={setIsAuth} />
-      </div>
+    <div className="min-h-screen bg-gray-100">
+      <Header isAuth={isAuth} setIsAuth={setIsAuth} />
       <div className="flex items-center justify-center p-5">
-        <h1 className="font-bold text-3xl">{`Welcome!, ${userEmail}`}</h1>
+        <h1 className="font-bold text-3xl">{`Welcome!, ${email}`}</h1>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 ">
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         <div
           onDragOver={allowDrop}
           onDrop={() => handleDrop("Todo")}
@@ -254,40 +189,41 @@ const Tasks = () => {
               description={item.description}
               isCompleted={item.isCompleted}
               onUpdate={(field, value) =>
-                handleInlineUpdate(data.indexOf(item), field, value)
+                handleInlineUpdate(todoList.indexOf(item), field, value)
               }
-              handleDelete={() => handleDelete(data.indexOf(item))}
-              handleTaskProgress={() => toggleTaskCompletion(index)}
-              handleNext={() => handleNext(data.indexOf(item))}
-              handlePrevious={() => handlePrevious(data.indexOf(item))}
-              onDragStart={() => handleDragStart(data.indexOf(item))}
+              handleDelete={() => handleDelete(todoList.indexOf(item))}
+              handleTaskProgress={() => {}}
+              handleNext={() => handleNext(todoList.indexOf(item))}
+              handlePrevious={() => handlePrevious(todoList.indexOf(item))}
+              onDragStart={() => handleDragStart(todoList.indexOf(item))}
             />
           ))}
         </div>
         <div
           onDragOver={allowDrop}
           onDrop={() => handleDrop("InProgress")}
-          className="border p-6 space-y-7 rounded"
+          className="border p-6 space-y-3 rounded"
         >
           <h2 className="text-xl font-semibold mb-4">In Progress</h2>
           {inProgressTasks.map((item, index) => (
             <Card
               key={index}
-              handleDisable={item.currentStep}
               title={item.title}
+              handleDisable={item.currentStep}
               description={item.description}
               isCompleted={item.isCompleted}
               onUpdate={(field, value) =>
-                handleInlineUpdate(data.indexOf(item), field, value)
+                handleInlineUpdate(todoList.indexOf(item), field, value)
               }
-              handleDelete={() => handleDelete(data.indexOf(item))}
-              handleTaskProgress={() => toggleTaskCompletion(index)}
-              handleNext={() => handleNext(data.indexOf(item))}
-              handlePrevious={() => handlePrevious(data.indexOf(item))}
-              onDragStart={() => handleDragStart(data.indexOf(item))}
+              handleDelete={() => handleDelete(todoList.indexOf(item))}
+              handleTaskProgress={() => {}}
+              handleNext={() => handleNext(todoList.indexOf(item))}
+              handlePrevious={() => handlePrevious(todoList.indexOf(item))}
+              onDragStart={() => handleDragStart(todoList.indexOf(item))}
             />
           ))}
         </div>
+
         <div
           onDragOver={allowDrop}
           onDrop={() => handleDrop("Completed")}
@@ -297,18 +233,18 @@ const Tasks = () => {
           {completedTasks.map((item, index) => (
             <Card
               key={index}
-              handleDisable={item.currentStep}
               title={item.title}
+              handleDisable={item.currentStep}
               description={item.description}
               isCompleted={item.isCompleted}
               onUpdate={(field, value) =>
-                handleInlineUpdate(data.indexOf(item), field, value)
+                handleInlineUpdate(todoList.indexOf(item), field, value)
               }
-              handleDelete={() => handleDelete(data.indexOf(item))}
-              handleTaskProgress={() => toggleTaskCompletion(index)}
-              handleNext={() => handleNext(data.indexOf(item))}
-              handlePrevious={() => handlePrevious(data.indexOf(item))}
-              onDragStart={() => handleDragStart(data.indexOf(item))}
+              handleDelete={() => handleDelete(todoList.indexOf(item))}
+              handleTaskProgress={() => {}}
+              handleNext={() => handleNext(todoList.indexOf(item))}
+              handlePrevious={() => handlePrevious(todoList.indexOf(item))}
+              onDragStart={() => handleDragStart(todoList.indexOf(item))}
             />
           ))}
         </div>

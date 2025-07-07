@@ -38,7 +38,6 @@ const Login = () => {
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        // localStorage.setItem("token", userCredential.user.accessToken);
         navigate("/tasks");
       } catch (error) {
         console.error("error", error);
