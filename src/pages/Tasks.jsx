@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-
+import { taskValidationSchema as validationSchema } from "../utils/validations/taskValidation";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 
 import { auth } from "../firebase";
 
 import Card from "../components/Card";
 import Modal from "../components/Modal";
 import Header from "../components/Header";
+import toastMessages from "../utils/toastMessages";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -16,6 +16,7 @@ import {
   deleteTodo,
   updateTodo,
 } from "../store/slices/todoSlice";
+import { toast } from "react-toastify";
 
 const initialValues = {
   title: "",
@@ -26,6 +27,14 @@ const initialValues = {
 const Tasks = () => {
   const dispatch = useDispatch();
   const { todoList, email, isLoading } = useSelector((state) => state.todos);
+  const {
+    addSuccess,
+    taskIdMissing,
+    deleteSuccess,
+    deleteError,
+    updateSuccess,
+    updateError,
+  } = toastMessages.todos;
 
   const [userID, setUserID] = useState(null);
   const [editIndex, setEditIndex] = useState(null);
@@ -34,79 +43,94 @@ const Tasks = () => {
   const [dragCardIndex, setDragCardIndex] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const validationSchema = Yup.object({
-    title: Yup.string().required("Title is required"),
-    description: Yup.string().required("Description is required"),
-  });
-
   const formik = useFormik({
     initialValues,
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       if (!userID) {
         console.error("User is not authenticated");
+        toast.error("You must be logged in to perform this action.");
         return;
       }
 
-      if (isEditing) {
-        const taskId = todoList[editIndex]?.id;
-        if (!taskId) {
-          console.error("Missing Task ID for edit.");
-          return;
+      try {
+        if (isEditing) {
+          const taskId = todoList[editIndex]?.id;
+          if (!taskId) {
+            console.error("Missing Task ID for edit.");
+            toast.error(taskIdMissing);
+            return;
+          }
+
+          await dispatch(updateTodo({ id: taskId, updates: values })).unwrap();
+          toast.success(updateSuccess);
+          setIsEditing(false);
+          setEditIndex(null);
+        } else {
+          await dispatch(addTodo(values)).unwrap();
+          toast.success(addSuccess);
         }
 
-        dispatch(updateTodo({ id: taskId, updates: values }));
-        setIsEditing(false);
-        setEditIndex(null);
-      } else {
-        dispatch(addTodo(values));
+        setIsModalOpen(false);
+        resetForm();
+      } catch (error) {
+        console.error("Task operation failed:", error);
+        toast.error("");
       }
-
-      setIsModalOpen(false);
-      resetForm();
     },
   });
 
-  const handleDelete = (index) => {
+  const handleDelete = async (index) => {
     const task = todoList[index];
     if (task?.id) {
-      dispatch(deleteTodo(task.id));
+      try {
+        await dispatch(deleteTodo(task.id)).unwrap();
+        toast.success(deleteSuccess);
+      } catch {
+        toast.error(deleteError);
+      }
     }
   };
 
   const handleNext = (index) => {
     const task = todoList[index];
     if (!task) return;
-    let status = task.status;
-    let currentStep = task.currentStep;
 
-    if (status === "Todo") {
-      status = "InProgress";
-      currentStep = 1;
-    } else if (status === "InProgress") {
-      status = "Completed";
-      currentStep = 2;
+    try {
+      let { status, currentStep } = task;
+
+      if (status === "Todo") {
+        status = "InProgress";
+        currentStep = 1;
+      } else if (status === "InProgress") {
+        status = "Completed";
+        currentStep = 2;
+      }
+      dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
+    } catch (error) {
+      console.error("Error in handleNext:", error);
     }
-
-    dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
   };
 
   const handlePrevious = (index) => {
     const task = todoList[index];
     if (!task) return;
 
-    let status = task.status;
-    let currentStep = task.currentStep;
+    try {
+      let { status, currentStep } = task;
 
-    if (status === "Completed") {
-      status = "InProgress";
-      currentStep = 1;
-    } else if (status === "InProgress") {
-      status = "Todo";
-      currentStep = 0;
+      if (status === "Completed") {
+        status = "InProgress";
+        currentStep = 1;
+      } else if (status === "InProgress") {
+        status = "Todo";
+        currentStep = 0;
+      }
+
+      dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
+    } catch (error) {
+      console.error("Error in handlePrevious:", error);
     }
-
-    dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
   };
 
   const handleDragStart = (index) => {
@@ -121,19 +145,32 @@ const Tasks = () => {
     if (dragCardIndex === null) return;
 
     const task = todoList[dragCardIndex];
-    const currentStep = status === "Todo" ? 0 : status === "InProgress" ? 1 : 2;
+    if (!task) return;
 
-    dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
+    try {
+      const currentStep =
+        status === "Todo" ? 0 : status === "InProgress" ? 1 : 2;
 
-    setDragCardIndex(null);
+      dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
+      setDragCardIndex(null);
+    } catch (error) {
+      console.error("Error in handleDrop:", error);
+    }
   };
 
   const handleInlineUpdate = (index, field, value) => {
     const task = todoList[index];
     if (!task?.id) return;
 
-    dispatch(updateTodo({ id: task.id, updates: { [field]: value } }));
+    try {
+      dispatch(updateTodo({ id: task.id, updates: { [field]: value } }));
+      toast.success(updateSuccess);
+    } catch (error) {
+      console.error("Error in handleInlineUpdate:", error);
+      toast.error(updateError);
+    }
   };
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -158,7 +195,6 @@ const Tasks = () => {
 
   const { handleChange, handleSubmit, values } = formik;
 
-  console.log("email", email);
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />

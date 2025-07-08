@@ -1,10 +1,11 @@
 import { useFormik } from "formik";
-import * as Yup from "yup";
-
+import { signupValidationSchema as validationSchema } from "../../utils/validations/authValidation";
+import toastMessages from "../../utils/toastMessages";
 import { auth } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const initialValues = {
   username: "",
@@ -13,35 +14,21 @@ const initialValues = {
 };
 
 const Signup = () => {
+  const { signupError, signupSuccess } = toastMessages.auth;
   const navigate = useNavigate();
-
-  const validationSchema = Yup.object({
-    username: Yup.string()
-      .min(3, "Username must be at least 3 characters")
-      .required("Username is required"),
-    email: Yup.string()
-      .matches(
-        /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-        "Invalid email format"
-      )
-      .required("Email is required"),
-    password: Yup.string()
-      .min(6, "Minimum 6 characters")
-      .required("Password is required"),
-  });
 
   const formik = useFormik({
     initialValues,
     validationSchema,
     onSubmit: async (values) => {
       const { email, password } = values;
-
       try {
         await createUserWithEmailAndPassword(auth, email, password);
+        toast.success(signupSuccess);
         navigate("/");
       } catch (error) {
+        toast.error(signupError);
         console.error("Signup error:", error);
-        alert(error.message || "Signup failed");
       }
     },
   });

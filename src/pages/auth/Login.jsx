@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
-import * as Yup from "yup";
-
+import { loginValidationSchema as validationSchema } from "../../utils/validations/authValidation";
+import toastMessages from "../../utils/toastMessages";
 import { auth } from "../../firebase";
 import {
   GoogleAuthProvider,
@@ -9,6 +9,7 @@ import {
 } from "firebase/auth";
 
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const initialValues = {
   email: "",
@@ -17,47 +18,40 @@ const initialValues = {
 
 const Login = () => {
   const navigate = useNavigate();
-
-  const validationSchema = Yup.object({
-    email: Yup.string()
-      .matches(
-        /^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,}$/i,
-        "Invalid email format"
-      )
-      .required("Email is required"),
-    password: Yup.string()
-      .min(6, "Minimum 6 characters")
-      .required("Password is required"),
-  });
+  const {
+    loginSuccess,
+    loginError,
+    loginSuccessWithGoogle,
+    loginErrorWithGoogle,
+  } = toastMessages.auth;
 
   const formik = useFormik({
     initialValues,
     validationSchema,
     onSubmit: async (values) => {
       const { email, password } = values;
-
       try {
         await signInWithEmailAndPassword(auth, email, password);
         localStorage.setItem("token", auth?.currentUser?.accessToken);
+        toast.success(loginSuccess);
         navigate("/tasks");
       } catch (error) {
         console.error("error", error);
-        alert(error.message);
+        toast.error(loginError);
       }
     },
   });
-
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
       localStorage.setItem("token", user.accessToken);
+      toast.success(loginSuccessWithGoogle);
       navigate("/tasks");
     } catch (error) {
       console.error("Google login error", error);
-      alert("Google login failed. " + error.message);
+      toast.error(loginErrorWithGoogle);
     }
   };
 

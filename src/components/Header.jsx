@@ -1,20 +1,21 @@
 import { getAuth, signOut } from "firebase/auth";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toastMessages from "../utils/toastMessages";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const auth = getAuth();
   const navigate = useNavigate();
+  const { logout } = toastMessages.auth;
 
   const isAuthenticated = localStorage.getItem("token");
-  const [email, setEmail] = useState(auth?.currentUser?.email);
 
   const handleAuthClick = () => {
     if (isAuthenticated) {
       signOut(auth)
         .then(() => {
-          setEmail(null);
           localStorage.removeItem("token");
+          toast.success(logout);
           navigate("/");
         })
         .catch((error) => {
