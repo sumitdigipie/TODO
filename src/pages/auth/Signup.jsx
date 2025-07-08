@@ -1,6 +1,8 @@
 import { useFormik } from "formik";
+
 import { signupValidationSchema as validationSchema } from "../../utils/validations/authValidation";
 import toastMessages from "../../utils/toastMessages";
+
 import { auth } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 

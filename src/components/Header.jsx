@@ -1,7 +1,8 @@
 import { getAuth, signOut } from "firebase/auth";
+
 import { useNavigate } from "react-router-dom";
-import toastMessages from "../utils/toastMessages";
 import { toast } from "react-toastify";
+import toastMessages from "../utils/toastMessages";
 
 const Header = () => {
   const auth = getAuth();

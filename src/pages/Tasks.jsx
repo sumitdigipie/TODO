@@ -24,6 +24,8 @@ const initialValues = {
   isCompleted: false,
 };
 
+const ticketStages = ["Todo", "InProgress", "Completed"];
+
 const Tasks = () => {
   const dispatch = useDispatch();
   const { todoList, email, isLoading } = useSelector((state) => state.todos);
@@ -97,16 +99,20 @@ const Tasks = () => {
     if (!task) return;
 
     try {
-      let { status, currentStep } = task;
+      let { status } = task;
 
-      if (status === "Todo") {
-        status = "InProgress";
-        currentStep = 1;
-      } else if (status === "InProgress") {
-        status = "Completed";
-        currentStep = 2;
+      const currentStep = ticketStages.indexOf(status);
+      const nextStep = currentStep + 1;
+
+      if (nextStep < ticketStages.length) {
+        const status = ticketStages[nextStep];
+        dispatch(
+          updateTodo({
+            id: task.id,
+            updates: { status, currentStep: nextStep },
+          })
+        );
       }
-      dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
     } catch (error) {
       console.error("Error in handleNext:", error);
     }
@@ -117,17 +123,20 @@ const Tasks = () => {
     if (!task) return;
 
     try {
-      let { status, currentStep } = task;
+      let { status } = task;
 
-      if (status === "Completed") {
-        status = "InProgress";
-        currentStep = 1;
-      } else if (status === "InProgress") {
-        status = "Todo";
-        currentStep = 0;
+      const currentStep = ticketStages.indexOf(status);
+      const prevStep = currentStep - 1;
+
+      if (prevStep >= 0) {
+        const status = ticketStages[prevStep];
+        dispatch(
+          updateTodo({
+            id: task.id,
+            updates: { status, currentStep: prevStep },
+          })
+        );
       }
-
-      dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
     } catch (error) {
       console.error("Error in handlePrevious:", error);
     }
@@ -148,9 +157,7 @@ const Tasks = () => {
     if (!task) return;
 
     try {
-      const currentStep =
-        status === "Todo" ? 0 : status === "InProgress" ? 1 : 2;
-
+      const currentStep = ticketStages.indexOf(status);
       dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
       setDragCardIndex(null);
     } catch (error) {
@@ -187,11 +194,10 @@ const Tasks = () => {
     }
   }, [userID, dispatch]);
 
-  const todoTasks = todoList.filter((item) => item.status === "Todo");
-  const inProgressTasks = todoList.filter(
-    (item) => item.status === "InProgress"
-  );
-  const completedTasks = todoList.filter((item) => item.status === "Completed");
+  const tasksByStatus = ticketStages.reduce((acc, status) => {
+    acc[status] = todoList.filter((item) => item.status === status);
+    return acc;
+  }, {});
 
   const { handleChange, handleSubmit, values } = formik;
 
@@ -207,87 +213,44 @@ const Tasks = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-        <div
-          onDragOver={allowDrop}
-          onDrop={() => handleDrop("Todo")}
-          className="border p-6 space-y-3 rounded"
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold mb-4 text-center">Todo</h2>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-black px-4 py-2 rounded text-cyan-50 mr-3"
-            >
-              Add
-            </button>
+        {ticketStages.map((status) => (
+          <div
+            key={status}
+            onDragOver={allowDrop}
+            onDrop={() => handleDrop(status)}
+            className="border p-6 space-y-3 rounded"
+          >
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold mb-4 text-center">
+                {status}
+              </h2>
+              {status === "Todo" && (
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-black px-4 py-2 rounded text-cyan-50 mr-3"
+                >
+                  Add
+                </button>
+              )}
+            </div>
+            {tasksByStatus[status].map((item) => (
+              <Card
+                key={item.id}
+                title={item.title}
+                handleDisable={item.currentStep}
+                description={item.description}
+                isCompleted={item.isCompleted}
+                onUpdate={(field, value) =>
+                  handleInlineUpdate(todoList.indexOf(item), field, value)
+                }
+                handleDelete={() => handleDelete(todoList.indexOf(item))}
+                handleNext={() => handleNext(todoList.indexOf(item))}
+                handlePrevious={() => handlePrevious(todoList.indexOf(item))}
+                onDragStart={() => handleDragStart(todoList.indexOf(item))}
+              />
+            ))}
           </div>
-          {todoTasks.map((item, index) => (
-            <Card
-              key={index}
-              title={item.title}
-              handleDisable={item.currentStep}
-              description={item.description}
-              isCompleted={item.isCompleted}
-              onUpdate={(field, value) =>
-                handleInlineUpdate(todoList.indexOf(item), field, value)
-              }
-              handleDelete={() => handleDelete(todoList.indexOf(item))}
-              handleTaskProgress={() => {}}
-              handleNext={() => handleNext(todoList.indexOf(item))}
-              handlePrevious={() => handlePrevious(todoList.indexOf(item))}
-              onDragStart={() => handleDragStart(todoList.indexOf(item))}
-            />
-          ))}
-        </div>
-        <div
-          onDragOver={allowDrop}
-          onDrop={() => handleDrop("InProgress")}
-          className="border p-6 space-y-3 rounded"
-        >
-          <h2 className="text-xl font-semibold mb-4">In Progress</h2>
-          {inProgressTasks.map((item, index) => (
-            <Card
-              key={index}
-              title={item.title}
-              handleDisable={item.currentStep}
-              description={item.description}
-              isCompleted={item.isCompleted}
-              onUpdate={(field, value) =>
-                handleInlineUpdate(todoList.indexOf(item), field, value)
-              }
-              handleDelete={() => handleDelete(todoList.indexOf(item))}
-              handleTaskProgress={() => {}}
-              handleNext={() => handleNext(todoList.indexOf(item))}
-              handlePrevious={() => handlePrevious(todoList.indexOf(item))}
-              onDragStart={() => handleDragStart(todoList.indexOf(item))}
-            />
-          ))}
-        </div>
-
-        <div
-          onDragOver={allowDrop}
-          onDrop={() => handleDrop("Completed")}
-          className="border p-6 space-y-3 rounded"
-        >
-          <h2 className="text-xl font-semibold mb-4">Completed</h2>
-          {completedTasks.map((item, index) => (
-            <Card
-              key={index}
-              title={item.title}
-              handleDisable={item.currentStep}
-              description={item.description}
-              isCompleted={item.isCompleted}
-              onUpdate={(field, value) =>
-                handleInlineUpdate(todoList.indexOf(item), field, value)
-              }
-              handleDelete={() => handleDelete(todoList.indexOf(item))}
-              handleTaskProgress={() => {}}
-              handleNext={() => handleNext(todoList.indexOf(item))}
-              handlePrevious={() => handlePrevious(todoList.indexOf(item))}
-              onDragStart={() => handleDragStart(todoList.indexOf(item))}
-            />
-          ))}
-        </div>
+        ))}
       </div>
 
       <Modal

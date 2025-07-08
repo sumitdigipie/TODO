@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 
-import Layout from "./components/Layout/Layout";
 import Tasks from "./pages/Tasks";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
-import PrivateRoute from "./components/PrivateRoute";
+
+import Layout from "./components/Layout/Layout";
 import PublicRoute from "./components/PublicRoute";
+import PrivateRoute from "./components/PrivateRoute";
 
 const App = () => {
   return (
