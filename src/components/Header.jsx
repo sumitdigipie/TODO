@@ -1,4 +1,3 @@
-import React from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +9,7 @@ const Header = ({ isAuth, setIsAuth }) => {
     if (isAuth) {
       signOut(auth)
         .then(() => {
+          localStorage.removeItem("token");
           setIsAuth(false);
           navigate("/");
         })

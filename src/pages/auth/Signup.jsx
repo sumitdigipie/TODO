@@ -1,8 +1,10 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
+
 import { auth } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+
+import { useNavigate } from "react-router-dom";
 
 const initialValues = {
   username: "",

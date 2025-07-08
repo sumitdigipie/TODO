@@ -1,6 +1,7 @@
 import { BookCheck, Trash2 } from "lucide-react";
-import PropTypes from "prop-types";
 import { useState } from "react";
+
+import PropTypes from "prop-types";
 
 const Card = ({
   title,

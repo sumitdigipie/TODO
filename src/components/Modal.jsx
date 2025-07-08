@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const Modal = ({
   isOpen,
@@ -48,6 +48,15 @@ const Modal = ({
       </div>
     </div>
   );
+};
+
+Modal.propTypes = {
+  isOpen: PropTypes.bool,
+  isEditing: PropTypes.bool,
+  onClose: PropTypes.func,
+  onSubmit: PropTypes.func,
+  values: PropTypes.object,
+  handleChange: PropTypes.func,
 };
 
 export default Modal;

@@ -1,6 +1,6 @@
-import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
 import { auth } from "../../firebase";
 import {
   GoogleAuthProvider,
@@ -38,6 +38,7 @@ const Login = () => {
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
+        localStorage.setItem("token", auth?.currentUser?.accessToken);
         navigate("/tasks");
       } catch (error) {
         console.error("error", error);
@@ -50,8 +51,6 @@ const Login = () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
       const user = result.user;
 
       localStorage.setItem("token", user.accessToken);
@@ -72,7 +71,6 @@ const Login = () => {
           <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">
             Login
           </h1>
-
           <div className="mb-4">
             <input
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -87,7 +85,6 @@ const Login = () => {
               <div className="text-red-500 text-sm mt-1">{errors.email}</div>
             )}
           </div>
-
           <div className="mb-4">
             <input
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -109,6 +106,7 @@ const Login = () => {
           >
             Login
           </button>
+
           <div className="mt-2 flex items-center justify-center">
             <span className=" text-center">
               Don't have account ?{" "}

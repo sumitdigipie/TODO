@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
 import { auth } from "../firebase";
+
 import Card from "../components/Card";
 import Modal from "../components/Modal";
 import Header from "../components/Header";
@@ -24,12 +27,12 @@ const Tasks = () => {
   const dispatch = useDispatch();
   const { todoList, email } = useSelector((state) => state.todos);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
-  const [dragCardIndex, setDragCardIndex] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [userID, setUserID] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [dragCardIndex, setDragCardIndex] = useState(null);
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
