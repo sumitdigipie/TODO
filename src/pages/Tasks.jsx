@@ -25,14 +25,14 @@ const initialValues = {
 
 const Tasks = () => {
   const dispatch = useDispatch();
-  const { todoList, email } = useSelector((state) => state.todos);
+  const { todoList, email, isLoading } = useSelector((state) => state.todos);
 
   const [userID, setUserID] = useState(null);
-  const [isAuth, setIsAuth] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dragCardIndex, setDragCardIndex] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
@@ -134,17 +134,13 @@ const Tasks = () => {
 
     dispatch(updateTodo({ id: task.id, updates: { [field]: value } }));
   };
-
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setUserID(user.uid);
-        setIsAuth(true);
-      } else {
-        setIsAuth(false);
       }
+      setAuthLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -162,11 +158,16 @@ const Tasks = () => {
 
   const { handleChange, handleSubmit, values } = formik;
 
+  console.log("email", email);
   return (
     <div className="min-h-screen bg-gray-100">
-      <Header isAuth={isAuth} setIsAuth={setIsAuth} />
+      <Header />
       <div className="flex items-center justify-center p-5">
-        <h1 className="font-bold text-3xl">{`Welcome!, ${email}`}</h1>
+        {authLoading || isLoading ? (
+          <div className="loader">Loading...</div>
+        ) : (
+          <h1 className="font-bold text-3xl">{`Welcome!, ${email}`}</h1>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">

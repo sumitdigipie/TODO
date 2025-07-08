@@ -1,16 +1,20 @@
 import { getAuth, signOut } from "firebase/auth";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Header = ({ isAuth, setIsAuth }) => {
-  const navigate = useNavigate();
+const Header = () => {
   const auth = getAuth();
+  const navigate = useNavigate();
+
+  const isAuthenticated = localStorage.getItem("token");
+  const [email, setEmail] = useState(auth?.currentUser?.email);
 
   const handleAuthClick = () => {
-    if (isAuth) {
+    if (isAuthenticated) {
       signOut(auth)
         .then(() => {
+          setEmail(null);
           localStorage.removeItem("token");
-          setIsAuth(false);
           navigate("/");
         })
         .catch((error) => {
@@ -27,10 +31,10 @@ const Header = ({ isAuth, setIsAuth }) => {
       <button
         onClick={handleAuthClick}
         className={`${
-          isAuth ? "bg-red-400 text-black" : "bg-blue-600 text-white"
+          isAuthenticated ? "bg-red-400 text-black" : "bg-blue-600 text-white"
         } px-4 py-2 rounded hover:bg-blue-700`}
       >
-        {isAuth ? "Logout" : "Login"}
+        {isAuthenticated ? "Logout" : "Login"}
       </button>
     </header>
   );

@@ -11,7 +11,7 @@ import { db, auth } from "../../firebase";
 
 const initialState = {
   todoList: [],
-  loading: false,
+  isLoading: false,
   email: "",
 };
 
@@ -72,23 +72,23 @@ const todoSlice = createSlice({
       .addCase(fetchTodos.pending, (state) => {
         return {
           ...state,
-          loading: true,
+          isLoading: true,
         };
       })
       .addCase(fetchTodos.fulfilled, (state, action) => {
         const { email, todos } = action.payload;
         return {
           ...state,
-          loading: false,
+          isLoading: false,
           todoList: todos,
           email,
         };
       })
       .addCase(fetchTodos.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         return {
           ...state,
-          loading: false,
+          isLoading: false,
         };
       })
 
