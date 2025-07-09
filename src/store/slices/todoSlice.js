@@ -20,7 +20,9 @@ export const fetchTodos = createAsyncThunk("todos/fetchTodos", async () => {
   const email = auth.currentUser?.email;
   if (!userId) throw new Error("User not authenticated");
 
-  const querySnapshot = await getDocs(collection(db, "users", userId, "tasks"));
+  const querySnapshot = await getDocs(
+    collection(db, "tickets", userId, "tasks")
+  );
   const todos = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -35,7 +37,7 @@ export const addTodo = createAsyncThunk("todos/addTodo", async (task) => {
 
   const newItem = { ...task, status: "Todo", currentStep: 0 };
   const docRef = await addDoc(
-    collection(db, "users", userId, "tasks"),
+    collection(db, "tickets", userId, "tasks"),
     newItem
   );
 
@@ -48,7 +50,7 @@ export const deleteTodo = createAsyncThunk(
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("User not authenticated");
 
-    await deleteDoc(doc(db, "users", userId, "tasks", taskId));
+    await deleteDoc(doc(db, "tickets", userId, "tasks", taskId));
     return taskId;
   }
 );
@@ -59,7 +61,7 @@ export const updateTodo = createAsyncThunk(
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("User not authenticated");
 
-    await updateDoc(doc(db, "users", userId, "tasks", id), updates);
+    await updateDoc(doc(db, "tickets", userId, "tasks", id), updates);
     return { id, updates };
   }
 );

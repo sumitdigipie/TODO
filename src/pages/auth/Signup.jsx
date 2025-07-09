@@ -1,16 +1,18 @@
 import { useFormik } from "formik";
-
 import { signupValidationSchema as validationSchema } from "../../utils/validations/authValidation";
 import toastMessages from "../../utils/toastMessages";
 
 import { auth } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const initialValues = {
-  username: "",
+  firstName: "",
+  lastName: "",
   email: "",
   password: "",
 };
@@ -23,9 +25,22 @@ const Signup = () => {
     initialValues,
     validationSchema,
     onSubmit: async (values) => {
-      const { email, password } = values;
+      const { firstName, lastName, email, password } = values;
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const user = userCredential.user;
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          firstName,
+          lastName,
+          email,
+          createdAt: new Date(),
+        });
+
         toast.success(signupSuccess);
         navigate("/");
       } catch (error) {
@@ -45,27 +60,45 @@ const Signup = () => {
           <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">
             Signup
           </h1>
+
           <div className="mb-4">
             <input
-              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-gray-300 rounded"
               type="text"
-              name="username"
-              placeholder="Enter your username"
+              name="firstName"
+              placeholder="First Name"
               onChange={handleChange}
               onBlur={handleBlur}
-              value={values.username}
+              value={values.firstName}
             />
-            {touched.username && errors.username && (
-              <div className="text-red-500 text-sm mt-1">{errors.username}</div>
+            {touched.firstName && errors.firstName && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.firstName}
+              </div>
             )}
           </div>
 
           <div className="mb-4">
             <input
-              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-gray-300 rounded"
               type="text"
+              name="lastName"
+              placeholder="Last Name"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.lastName}
+            />
+            {touched.lastName && errors.lastName && (
+              <div className="text-red-500 text-sm mt-1">{errors.lastName}</div>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <input
+              className="w-full p-3 border border-gray-300 rounded"
+              type="email"
               name="email"
-              placeholder="Enter your email"
+              placeholder="Email"
               onChange={handleChange}
               onBlur={handleBlur}
               value={values.email}
@@ -77,10 +110,10 @@ const Signup = () => {
 
           <div className="mb-4">
             <input
-              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-gray-300 rounded"
               type="password"
               name="password"
-              placeholder="Enter your password"
+              placeholder="Password"
               onChange={handleChange}
               onBlur={handleBlur}
               value={values.password}
@@ -92,26 +125,19 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-200"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
           >
             Signup
           </button>
         </form>
 
-        <div className="mt-4">
-          <div className="flex items-center justify-center w-full">
-            <button
-              onClick={() => {
-                navigate("/");
-              }}
-              className="px-4 py-2 border flex gap-2 border-slate-200 rounded-lg text-slate-700 hover:shadow transition duration-150"
-            >
-              <span className="text-black">
-                Already have an account?{" "}
-                <span className="underline">Login</span>
-              </span>
-            </button>
-          </div>
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => navigate("/")}
+            className="text-sm text-gray-600 hover:underline"
+          >
+            Already have an account? Login
+          </button>
         </div>
       </div>
     </div>

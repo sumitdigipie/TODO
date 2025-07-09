@@ -22,6 +22,7 @@ const initialValues = {
   title: "",
   description: "",
   isCompleted: false,
+  assignedTo: "",
 };
 
 const ticketStages = ["Todo", "InProgress", "Completed"];
@@ -93,7 +94,6 @@ const Tasks = () => {
       }
     }
   };
-
   const handleNext = (index) => {
     const task = todoList[index];
     if (!task) return;
@@ -200,7 +200,8 @@ const Tasks = () => {
   }, {});
 
   const { handleChange, handleSubmit, values } = formik;
-
+  console.log("values", values);
+  console.log("tasksByStatus", tasksByStatus);
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -239,6 +240,7 @@ const Tasks = () => {
                 title={item.title}
                 handleDisable={item.currentStep}
                 description={item.description}
+                AssignUser={item.assignedTo}
                 isCompleted={item.isCompleted}
                 onUpdate={(field, value) =>
                   handleInlineUpdate(todoList.indexOf(item), field, value)

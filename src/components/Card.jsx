@@ -1,11 +1,14 @@
 import { BookCheck, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import PropTypes from "prop-types";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllUsers } from "../store/slices/userSlice";
 
 const Card = ({
   title,
   description,
+  AssignUser,
   handleDelete,
   isCompleted,
   handleNext,
@@ -16,8 +19,13 @@ const Card = ({
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [isEditingAssignee, setIsEditingAssignee] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
+  const [editedAssignee, setEditedAssignee] = useState(AssignUser);
+
+  const { userList } = useSelector((state) => state.users);
+  const dispatch = useDispatch();
 
   const handleTitleBlur = () => {
     setIsEditingTitle(false);
@@ -32,6 +40,16 @@ const Card = ({
       onUpdate("description", editedDescription);
     }
   };
+
+  const handleAssigneeChange = (e) => {
+    setEditedAssignee(e.target.value);
+    onUpdate("assignedTo", e.target.value);
+    setIsEditingAssignee(false);
+  };
+
+  useEffect(() => {
+    dispatch(fetchAllUsers());
+  }, [dispatch]);
 
   return (
     <div
@@ -50,7 +68,8 @@ const Card = ({
               onChange={(e) => setEditedTitle(e.target.value)}
               onBlur={handleTitleBlur}
               onKeyDown={(e) => e.key === "Enter" && handleTitleBlur()}
-              className="text-3xl font-bold w-full bg-white px-1 border-b"
+              className="
+              "
               autoFocus
             />
           ) : (
@@ -68,7 +87,7 @@ const Card = ({
               onChange={(e) => setEditedDescription(e.target.value)}
               onBlur={handleDescriptionBlur}
               onKeyDown={(e) => e.key === "Enter" && handleDescriptionBlur()}
-              className="w-full mt-2 px-1 border bg-white"
+              className="w-full mt-2 px-1 border bg-gray-200"
               autoFocus
             />
           ) : (
@@ -94,21 +113,61 @@ const Card = ({
             <Trash2 />
           </button>
         </div>
-        <div className="flex gap-2">
-          <button
-            disabled={handleDisable === 0}
-            onClick={handlePrevious}
-            className="bg-blue-500 px-4 py-2 rounded text-cyan-50"
-          >
-            Previous
-          </button>
-          <button
-            disabled={handleDisable >= 2}
-            onClick={handleNext}
-            className="bg-black px-4 py-2 rounded text-cyan-50 mr-3"
-          >
-            Next
-          </button>
+        <div className="flex items-center justify-between p-3 rounded-md bg-white shadow-sm">
+          <div className="mr-5">
+            <span className="text-sm text-gray-500">Assigned to:</span>
+            {isEditingAssignee ? (
+              <select
+                value={editedAssignee}
+                onChange={handleAssigneeChange}
+                onBlur={() => setIsEditingAssignee(false)}
+                className="text-lg font-medium text-gray-800 bg-white border px-1"
+                autoFocus
+              >
+                {userList.map((user) => (
+                  <option
+                    key={user.id}
+                    value={`${user.firstName} ${user.lastName}`}
+                  >
+                    {user.firstName} {user.lastName}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <h1
+                className="text-lg font-medium text-gray-800 cursor-pointer"
+                onClick={() => setIsEditingAssignee(true)}
+              >
+                {AssignUser}
+              </h1>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              disabled={handleDisable === 0}
+              onClick={handlePrevious}
+              className={`px-4 py-2 rounded transition-colors text-white ${
+                handleDisable === 0
+                  ? "bg-blue-300 cursor-not-allowed"
+                  : "bg-blue-500 hover:bg-blue-600"
+              }`}
+            >
+              Previous
+            </button>
+
+            <button
+              disabled={handleDisable >= 2}
+              onClick={handleNext}
+              className={`px-4 py-2 rounded transition-colors text-white ${
+                handleDisable >= 2
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-black hover:bg-gray-800"
+              }`}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -118,6 +177,7 @@ const Card = ({
 Card.propTypes = {
   title: PropTypes.string,
   description: PropTypes.string,
+  AssignUser: PropTypes.string,
   handleDisable: PropTypes.number,
   handleDelete: PropTypes.func,
   onDragStart: PropTypes.func,
