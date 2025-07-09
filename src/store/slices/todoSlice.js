@@ -6,6 +6,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  collectionGroup,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 
@@ -20,13 +21,14 @@ export const fetchTodos = createAsyncThunk("todos/fetchTodos", async () => {
   const email = auth.currentUser?.email;
   if (!userId) throw new Error("User not authenticated");
 
-  const querySnapshot = await getDocs(
-    collection(db, "tickets", userId, "tasks")
-  );
+  const querySnapshot = await getDocs(collectionGroup(db, "tasks"));
+
   const todos = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   }));
+
+  console.log("todos", todos);
 
   return { todos, email };
 });
