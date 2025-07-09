@@ -9,6 +9,7 @@ const Card = ({
   title,
   description,
   AssignUser,
+  AssignUserId,
   handleDelete,
   isCompleted,
   handleNext,
@@ -22,7 +23,8 @@ const Card = ({
   const [isEditingAssignee, setIsEditingAssignee] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
-  const [editedAssignee, setEditedAssignee] = useState(AssignUser);
+  // const [editedAssignee, setEditedAssignee] = useState(AssignUser);
+  const [editedAssignee, setEditedAssignee] = useState(AssignUserId);
 
   const { userList } = useSelector((state) => state.users);
   const dispatch = useDispatch();
@@ -68,8 +70,7 @@ const Card = ({
               onChange={(e) => setEditedTitle(e.target.value)}
               onBlur={handleTitleBlur}
               onKeyDown={(e) => e.key === "Enter" && handleTitleBlur()}
-              className="
-              "
+              className="text-3xl font-bold w-full bg-gray-200 px-1 border-b"
               autoFocus
             />
           ) : (
@@ -125,10 +126,7 @@ const Card = ({
                 autoFocus
               >
                 {userList.map((user) => (
-                  <option
-                    key={user.id}
-                    value={`${user.firstName} ${user.lastName}`}
-                  >
+                  <option key={user.id} value={user.id}>
                     {user.firstName} {user.lastName}
                   </option>
                 ))}

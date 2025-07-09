@@ -67,10 +67,7 @@ const Modal = ({
             >
               <option value="">Assign to</option>
               {userList.map((user) => (
-                <option
-                  key={user.id}
-                  value={`${user.firstName} ${user.lastName}`}
-                >
+                <option key={user.id} value={user.uid}>
                   {user.firstName} {user.lastName}
                 </option>
               ))}

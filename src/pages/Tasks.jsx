@@ -30,6 +30,8 @@ const ticketStages = ["Todo", "InProgress", "Completed"];
 const Tasks = () => {
   const dispatch = useDispatch();
   const { todoList, email, isLoading } = useSelector((state) => state.todos);
+  const { userList } = useSelector((state) => state.users);
+
   const {
     addSuccess,
     taskIdMissing,
@@ -45,6 +47,7 @@ const Tasks = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dragCardIndex, setDragCardIndex] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [filter, setFilter] = useState("All");
 
   const formik = useFormik({
     initialValues,
@@ -194,14 +197,18 @@ const Tasks = () => {
     }
   }, [userID, dispatch]);
 
+  const filteredTodos =
+    filter === "My Tickets"
+      ? todoList.filter((item) => item.assignedTo === userID)
+      : todoList;
+
   const tasksByStatus = ticketStages.reduce((acc, status) => {
-    acc[status] = todoList.filter((item) => item.status === status);
+    acc[status] = filteredTodos.filter((item) => item.status === status);
     return acc;
   }, {});
 
   const { handleChange, handleSubmit, values } = formik;
-  console.log("values", values);
-  console.log("tasksByStatus", tasksByStatus);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -212,7 +219,24 @@ const Tasks = () => {
           <h1 className="font-bold text-3xl">{`Welcome!, ${email}`}</h1>
         )}
       </div>
-
+      <div className="flex justify-center space-x-4 p-4">
+        <button
+          className={`px-4 py-2 rounded ${
+            filter === "All" ? "bg-blue-600 text-white" : "bg-gray-300"
+          }`}
+          onClick={() => setFilter("All")}
+        >
+          All Tickets
+        </button>
+        <button
+          className={`px-4 py-2 rounded ${
+            filter === "My Tickets" ? "bg-blue-600 text-white" : "bg-gray-300"
+          }`}
+          onClick={() => setFilter("My Tickets")}
+        >
+          My Tickets
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         {ticketStages.map((status) => (
           <div
@@ -234,23 +258,33 @@ const Tasks = () => {
                 </button>
               )}
             </div>
-            {tasksByStatus[status].map((item) => (
-              <Card
-                key={item.id}
-                title={item.title}
-                handleDisable={item.currentStep}
-                description={item.description}
-                AssignUser={item.assignedTo}
-                isCompleted={item.isCompleted}
-                onUpdate={(field, value) =>
-                  handleInlineUpdate(todoList.indexOf(item), field, value)
-                }
-                handleDelete={() => handleDelete(todoList.indexOf(item))}
-                handleNext={() => handleNext(todoList.indexOf(item))}
-                handlePrevious={() => handlePrevious(todoList.indexOf(item))}
-                onDragStart={() => handleDragStart(todoList.indexOf(item))}
-              />
-            ))}
+            {tasksByStatus[status].map((item) => {
+              const assignedUser = userList.find(
+                (user) => user.id === item.assignedTo
+              );
+
+              return (
+                <Card
+                  key={item.id}
+                  title={item.title}
+                  description={item.description}
+                  isCompleted={item.isCompleted}
+                  handleDisable={item.currentStep}
+                  AssignUser={
+                    assignedUser
+                      ? `${assignedUser.firstName} ${assignedUser.lastName}`
+                      : "not assigned"
+                  }
+                  onUpdate={(field, value) =>
+                    handleInlineUpdate(todoList.indexOf(item), field, value)
+                  }
+                  handleDelete={() => handleDelete(todoList.indexOf(item))}
+                  handleNext={() => handleNext(todoList.indexOf(item))}
+                  handlePrevious={() => handlePrevious(todoList.indexOf(item))}
+                  onDragStart={() => handleDragStart(todoList.indexOf(item))}
+                />
+              );
+            })}
           </div>
         ))}
       </div>
