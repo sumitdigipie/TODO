@@ -23,8 +23,7 @@ const Card = ({
   const [isEditingAssignee, setIsEditingAssignee] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
-  // const [editedAssignee, setEditedAssignee] = useState(AssignUser);
-  const [editedAssignee, setEditedAssignee] = useState("");
+  const [editedAssignee, setEditedAssignee] = useState(AssignUserId);
 
   const { userList } = useSelector((state) => state.users);
   const dispatch = useDispatch();
@@ -48,19 +47,16 @@ const Card = ({
     onUpdate("assignedTo", e.target.value);
     setIsEditingAssignee(false);
   };
+  const handleAssignedClick = () => {
+    setIsEditingAssignee(true);
+    let assignedValue = userList.find((item) => item.uid === AssignUserId).uid;
+    setEditedAssignee(assignedValue);
+  };
 
   useEffect(() => {
     dispatch(fetchAllUsers());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (isEditingAssignee) {
-      setEditedAssignee(AssignUserId);
-    }
-  }, [isEditingAssignee, AssignUserId]);
-
-  console.log("AssignUserId:", AssignUserId);
-  console.log("editedAssignee:", editedAssignee);
   return (
     <div
       draggable
@@ -142,7 +138,7 @@ const Card = ({
             ) : (
               <h1
                 className="text-lg font-medium text-gray-800 cursor-pointer"
-                onClick={() => setIsEditingAssignee(true)}
+                onClick={() => handleAssignedClick()}
               >
                 {AssignUser}
               </h1>

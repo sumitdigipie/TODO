@@ -28,8 +28,6 @@ export const fetchTodos = createAsyncThunk("todos/fetchTodos", async () => {
     ...doc.data(),
   }));
 
-  console.log("todos", todos);
-
   return { todos, email };
 });
 

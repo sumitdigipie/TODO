@@ -270,6 +270,7 @@ const Tasks = () => {
                   description={item.description}
                   isCompleted={item.isCompleted}
                   handleDisable={item.currentStep}
+                  AssignUserId={assignedUser?.uid}
                   AssignUser={
                     assignedUser
                       ? `${assignedUser.firstName} ${assignedUser.lastName}`
