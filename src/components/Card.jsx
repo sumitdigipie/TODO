@@ -24,7 +24,7 @@ const Card = ({
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
   // const [editedAssignee, setEditedAssignee] = useState(AssignUser);
-  const [editedAssignee, setEditedAssignee] = useState(AssignUserId);
+  const [editedAssignee, setEditedAssignee] = useState("");
 
   const { userList } = useSelector((state) => state.users);
   const dispatch = useDispatch();
@@ -53,6 +53,14 @@ const Card = ({
     dispatch(fetchAllUsers());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (isEditingAssignee) {
+      setEditedAssignee(AssignUserId);
+    }
+  }, [isEditingAssignee, AssignUserId]);
+
+  console.log("AssignUserId:", AssignUserId);
+  console.log("editedAssignee:", editedAssignee);
   return (
     <div
       draggable
