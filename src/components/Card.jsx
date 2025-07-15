@@ -1,9 +1,10 @@
-import { BookCheck, Trash2 } from "lucide-react";
+import { BookCheck, Ticket, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllUsers } from "../store/slices/userSlice";
+import TicketModal from "./TicketModal";
 
 const Card = ({
   title,
@@ -21,9 +22,11 @@ const Card = ({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isEditingAssignee, setIsEditingAssignee] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
   const [editedAssignee, setEditedAssignee] = useState(AssignUserId);
+  const [isReadMore, setIsReadMore] = useState(true);
 
   const { userList, currentUserData } = useSelector((state) => state.users);
   const dispatch = useDispatch();
@@ -65,11 +68,10 @@ const Card = ({
     <div
       draggable
       onDragStart={onDragStart}
-      className={`border rounded-xl shadow-sm p-6 transition-colors duration-300 ${
-        isCompleted
-          ? "border-green-400 bg-green-50"
-          : "border-gray-200 bg-white"
-      }`}
+      className={`border rounded-xl shadow-sm p-6 transition-colors duration-300 ${isCompleted
+        ? "border-green-400 bg-green-50"
+        : "border-gray-200 bg-white"
+        }`}
     >
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1">
@@ -98,16 +100,26 @@ const Card = ({
               onChange={(e) => setEditedDescription(e.target.value)}
               onBlur={handleDescriptionBlur}
               onKeyDown={(e) => e.key === "Enter" && handleDescriptionBlur()}
-              className="w-full mt-2 p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full mt-2 p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-wrap"
               rows={3}
               autoFocus
             />
           ) : (
             <p
-              className="mt-2 text-gray-700 cursor-pointer hover:text-blue-600"
+              className="mt-2 text-gray-700 cursor-pointer "
               onClick={() => setIsEditingDescription(true)}
             >
-              {description}
+              {isReadMore ? description.slice(0, 110) : description}
+              {description.length > 110 && (
+                <span
+                  onClick={() => {
+                    setIsModalOpen(true);
+                  }}
+                  className="text-blue-500 cursor-pointer"
+                >
+                  {isReadMore && '...read more'}
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -133,9 +145,8 @@ const Card = ({
             </select>
           ) : (
             <span
-              className={`text-base font-medium text-gray-800 ${
-                canEdit ? "cursor-pointer hover:underline" : "cursor-default"
-              }`}
+              className={`text-base font-medium text-gray-800 ${canEdit ? "cursor-pointer hover:underline" : "cursor-default"
+                }`}
               onClick={() => {
                 if (canEdit) handleAssignedClick();
               }}
@@ -159,11 +170,10 @@ const Card = ({
           <button
             disabled={handleDisable === 0}
             onClick={handlePrevious}
-            className={`px-4 py-2 rounded-md transition-colors text-white ${
-              handleDisable === 0
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600"
-            }`}
+            className={`px-4 py-2 rounded-md transition-colors text-white ${handleDisable === 0
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
+              }`}
           >
             Previous
           </button>
@@ -171,17 +181,25 @@ const Card = ({
           <button
             disabled={handleDisable >= 2}
             onClick={handleNext}
-            className={`px-4 py-2 rounded-md transition-colors text-white ${
-              handleDisable >= 2
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-black hover:bg-gray-800"
-            }`}
+            className={`px-4 py-2 rounded-md transition-colors text-white ${handleDisable >= 2
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-black hover:bg-gray-800"
+              }`}
           >
             Next
           </button>
         </div>
       </div>
+
+      <TicketModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editedTitle}
+        description={editedDescription}
+        editedAssignee={editedAssignee}
+      />
     </div>
+
   );
 };
 

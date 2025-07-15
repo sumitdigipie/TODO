@@ -15,11 +15,9 @@ export const fetchAllUsers = createAsyncThunk("users/fetchAll", async () => {
     id: doc.id,
     ...doc.data(),
   }));
-
   const currentUser = getAuth().currentUser;
   const currentUserData =
     users.find((user) => user.uid === currentUser?.uid) || null;
-
   return {
     users,
     currentUserData,
