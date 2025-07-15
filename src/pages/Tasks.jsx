@@ -17,6 +17,7 @@ import {
   updateTodo,
 } from "../store/slices/todoSlice";
 import { toast } from "react-toastify";
+import { fetchAllUsers } from "../store/slices/userSlice";
 
 const initialValues = {
   title: "",
@@ -205,6 +206,10 @@ const Tasks = () => {
     }
   }, [userID, dispatch]);
 
+  useEffect(() => {
+    dispatch(fetchAllUsers());
+  }, [dispatch]);
+
   const filteredTodos =
     filter === "My Tickets"
       ? todoList.filter((item) => item.assignedTo === userID)
@@ -227,9 +232,9 @@ const Tasks = () => {
           <h1 className="font-bold text-3xl text-center flex items-center justify-center gap-2">
             {currentUserData && (
               <>
-                Welcome, {currentUserData.firstName} {currentUserData.lastName}
+                Welcome, {currentUserData?.firstName} {currentUserData?.lastName}
                 <span className="bg-blue-100 text-blue-700 text-sm font-semibold px-2 py-1 rounded-full">
-                  {currentUserData.role || "User"}
+                  {currentUserData?.role || "User"}
                 </span>
               </>
             )}
@@ -238,17 +243,15 @@ const Tasks = () => {
       </div>
       <div className="flex justify-center space-x-4 p-4">
         <button
-          className={`px-4 py-2 rounded ${
-            filter === "All" ? "bg-blue-600 text-white" : "bg-gray-300"
-          }`}
+          className={`px-4 py-2 rounded ${filter === "All" ? "bg-blue-600 text-white" : "bg-gray-300"
+            }`}
           onClick={() => setFilter("All")}
         >
           All Tickets
         </button>
         <button
-          className={`px-4 py-2 rounded ${
-            filter === "My Tickets" ? "bg-blue-600 text-white" : "bg-gray-300"
-          }`}
+          className={`px-4 py-2 rounded ${filter === "My Tickets" ? "bg-blue-600 text-white" : "bg-gray-300"
+            }`}
           onClick={() => setFilter("My Tickets")}
         >
           My Tickets
