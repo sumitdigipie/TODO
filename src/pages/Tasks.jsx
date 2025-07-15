@@ -18,6 +18,7 @@ import {
 } from "../store/slices/todoSlice";
 import { toast } from "react-toastify";
 import { fetchAllUsers } from "../store/slices/userSlice";
+import { CircularProgress } from "@mui/material";
 
 const initialValues = {
   title: "",
@@ -31,7 +32,8 @@ const ticketStages = ["Todo", "InProgress", "Completed"];
 const Tasks = () => {
   const dispatch = useDispatch();
   const { todoList, isLoading } = useSelector((state) => state.todos);
-  const { userList, currentUserData } = useSelector((state) => state.users);
+  let { userList, currentUserData, isLoading: isUsersLoading } = useSelector((state) => state.users);
+
 
   const {
     addSuccess,
@@ -211,14 +213,16 @@ const Tasks = () => {
   }, [dispatch]);
 
   const filteredTodos =
-    filter === "My Tickets"
-      ? todoList.filter((item) => item.assignedTo === userID)
+    filter !== "All"
+      ? todoList.filter((item) => item.assignedTo === filter)
       : todoList;
-
+  console.log("filteredTodos", filteredTodos)
   const tasksByStatus = ticketStages.reduce((acc, status) => {
     acc[status] = filteredTodos.filter((item) => item.status === status);
     return acc;
   }, {});
+
+  console.log(filter)
 
   const { handleChange, handleSubmit, values } = formik;
 
@@ -242,20 +246,29 @@ const Tasks = () => {
         )}
       </div>
       <div className="flex justify-center space-x-4 p-4">
-        <button
-          className={`px-4 py-2 rounded ${filter === "All" ? "bg-blue-600 text-white" : "bg-gray-300"
-            }`}
-          onClick={() => setFilter("All")}
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          All Tickets
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${filter === "My Tickets" ? "bg-blue-600 text-white" : "bg-gray-300"
-            }`}
-          onClick={() => setFilter("My Tickets")}
-        >
-          My Tickets
-        </button>
+          {isUsersLoading ? (
+            <option disabled>
+              <CircularProgress size={14} />
+            </option>
+          ) : userList.length === 0 ? (
+            <option disabled>No users available</option>
+          ) : (
+            <>
+              <option>All</option>
+              {userList.map((user) => (
+                <option key={user.id} value={user.uid}>
+                  {user.firstName} {user.lastName}
+                </option>
+              ))}
+            </>
+          )}
+        </select>
+
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         {ticketStages.map((status) => (
