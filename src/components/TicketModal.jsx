@@ -11,7 +11,6 @@ const TicketModal = ({
   if (!isOpen) return null;
   const { userList } = useSelector((state) => state.users);
 
-  console.log(editedAssignee)
   const userDetails = userList.find((user) => user.uid === editedAssignee);
 
   return (
@@ -31,7 +30,7 @@ const TicketModal = ({
         <div className="space-y-4">
           <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>
 
-          <p className="mt-3 text-gray-600 leading-relaxed text-base">{description}</p>
+          <p className="mt-3 text-gray-600 leading-relaxed text-base overflow-y-auto max-h-60">{description}</p>
 
           <div className="mt-4">
             <span className="text-sm text-gray-500">Assigned to:</span>
