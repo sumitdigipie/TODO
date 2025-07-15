@@ -253,7 +253,7 @@ const Tasks = () => {
         >
           {isUsersLoading ? (
             <option disabled>
-              <CircularProgress size={14} />
+              <CircularProgress size={24} />
             </option>
           ) : userList.length === 0 ? (
             <option disabled>No users available</option>
