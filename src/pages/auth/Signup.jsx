@@ -15,6 +15,7 @@ const initialValues = {
   lastName: "",
   email: "",
   password: "",
+  role: "",
 };
 
 const Signup = () => {
@@ -25,7 +26,7 @@ const Signup = () => {
     initialValues,
     validationSchema,
     onSubmit: async (values) => {
-      const { firstName, lastName, email, password } = values;
+      const { firstName, lastName, email, password, role } = values;
       try {
         const userCredential = await createUserWithEmailAndPassword(
           auth,
@@ -38,6 +39,7 @@ const Signup = () => {
           firstName,
           lastName,
           email,
+          role,
           createdAt: new Date(),
         });
 
@@ -120,6 +122,24 @@ const Signup = () => {
             />
             {touched.password && errors.password && (
               <div className="text-red-500 text-sm mt-1">{errors.password}</div>
+            )}
+          </div>
+          <div className="mb-4">
+            <select
+              name="role"
+              value={values.role}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className="w-full p-3 border border-gray-300 rounded bg-white text-gray-700"
+            >
+              <option value="">Select Role</option>
+              <option value="Developer">Developer</option>
+              <option value="Tester">Tester</option>
+              <option value="Admin">Admin</option>
+              <option value="Manager">Manager</option>
+            </select>
+            {touched.role && errors.role && (
+              <div className="text-red-500 text-sm mt-1">{errors.role}</div>
             )}
           </div>
 

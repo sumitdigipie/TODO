@@ -13,12 +13,10 @@ import { db, auth } from "../../firebase";
 const initialState = {
   todoList: [],
   isLoading: false,
-  email: "",
 };
 
 export const fetchTodos = createAsyncThunk("todos/fetchTodos", async () => {
   const userId = auth.currentUser?.uid;
-  const email = auth.currentUser?.email;
   if (!userId) throw new Error("User not authenticated");
 
   const querySnapshot = await getDocs(collectionGroup(db, "tasks"));
@@ -28,7 +26,7 @@ export const fetchTodos = createAsyncThunk("todos/fetchTodos", async () => {
     ...doc.data(),
   }));
 
-  return { todos, email };
+  return { todos };
 });
 
 export const addTodo = createAsyncThunk("todos/addTodo", async (task) => {
@@ -36,10 +34,7 @@ export const addTodo = createAsyncThunk("todos/addTodo", async (task) => {
   if (!userId) throw new Error("User not authenticated");
 
   const newItem = { ...task, status: "Todo", currentStep: 0 };
-  const docRef = await addDoc(
-    collection(db, "tickets", userId, "tasks"),
-    newItem
-  );
+  const docRef = await addDoc(collection(db, "tasks"), newItem);
 
   return { id: docRef.id, ...newItem };
 });
@@ -50,7 +45,7 @@ export const deleteTodo = createAsyncThunk(
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("User not authenticated");
 
-    await deleteDoc(doc(db, "tickets", userId, "tasks", taskId));
+    await deleteDoc(doc(db, "tasks", taskId));
     return taskId;
   }
 );
@@ -61,7 +56,7 @@ export const updateTodo = createAsyncThunk(
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("User not authenticated");
 
-    await updateDoc(doc(db, "tickets", userId, "tasks", id), updates);
+    await updateDoc(doc(db, "tasks", id), updates);
     return { id, updates };
   }
 );
@@ -84,7 +79,6 @@ const todoSlice = createSlice({
           ...state,
           isLoading: false,
           todoList: todos,
-          email,
         };
       })
       .addCase(fetchTodos.rejected, (state, action) => {

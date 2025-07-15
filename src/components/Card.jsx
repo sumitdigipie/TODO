@@ -25,7 +25,7 @@ const Card = ({
   const [editedDescription, setEditedDescription] = useState(description);
   const [editedAssignee, setEditedAssignee] = useState(AssignUserId);
 
-  const { userList } = useSelector((state) => state.users);
+  const { userList, currentUserData } = useSelector((state) => state.users);
   const dispatch = useDispatch();
 
   const handleTitleBlur = () => {
@@ -47,6 +47,7 @@ const Card = ({
     onUpdate("assignedTo", e.target.value);
     setIsEditingAssignee(false);
   };
+
   const handleAssignedClick = () => {
     setIsEditingAssignee(true);
     let assignedValue = userList.find((item) => item.uid === AssignUserId).uid;
@@ -57,16 +58,21 @@ const Card = ({
     dispatch(fetchAllUsers());
   }, [dispatch]);
 
+  const canEdit =
+    currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
+
   return (
     <div
       draggable
-      onDragStart={(e) => onDragStart(e)}
-      className={`border bg-gray-200 rounded-md p-4 ${
-        isCompleted ? "border-green-500 bg-green-100" : "border-gray-300"
+      onDragStart={onDragStart}
+      className={`border rounded-xl shadow-sm p-6 transition-colors duration-300 ${
+        isCompleted
+          ? "border-green-400 bg-green-50"
+          : "border-gray-200 bg-white"
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div className="w-full">
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1">
           {isEditingTitle ? (
             <input
               type="text"
@@ -74,12 +80,12 @@ const Card = ({
               onChange={(e) => setEditedTitle(e.target.value)}
               onBlur={handleTitleBlur}
               onKeyDown={(e) => e.key === "Enter" && handleTitleBlur()}
-              className="text-3xl font-bold w-full bg-gray-200 px-1 border-b"
+              className="text-2xl font-semibold w-full px-2 py-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
               autoFocus
             />
           ) : (
             <h1
-              className="text-3xl font-bold cursor-pointer"
+              className="text-2xl font-semibold cursor-pointer hover:text-blue-600"
               onClick={() => setIsEditingTitle(true)}
             >
               {title}
@@ -92,84 +98,87 @@ const Card = ({
               onChange={(e) => setEditedDescription(e.target.value)}
               onBlur={handleDescriptionBlur}
               onKeyDown={(e) => e.key === "Enter" && handleDescriptionBlur()}
-              className="w-full mt-2 px-1 border bg-gray-200"
+              className="w-full mt-2 p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              rows={3}
               autoFocus
             />
           ) : (
             <p
-              className="cursor-pointer mt-2"
+              className="mt-2 text-gray-700 cursor-pointer hover:text-blue-600"
               onClick={() => setIsEditingDescription(true)}
             >
               {description}
             </p>
           )}
         </div>
-        {isCompleted ? <BookCheck color="#349400" /> : null}
+        {isCompleted && <BookCheck className="text-green-600 mt-1" size={28} />}
       </div>
 
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleDelete}
-            aria-label="Delete"
-            className="p-2 rounded hover:bg-gray-300"
-          >
-            <Trash2 />
-          </button>
+      <div className="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">Assigned to:</span>
+          {canEdit && isEditingAssignee ? (
+            <select
+              value={editedAssignee}
+              onChange={handleAssigneeChange}
+              onBlur={() => setIsEditingAssignee(false)}
+              className="text-sm px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              autoFocus
+            >
+              {userList.map((user) => (
+                <option key={user.id} value={user.uid}>
+                  {user.firstName} {user.lastName}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span
+              className={`text-base font-medium text-gray-800 ${
+                canEdit ? "cursor-pointer hover:underline" : "cursor-default"
+              }`}
+              onClick={() => {
+                if (canEdit) handleAssignedClick();
+              }}
+            >
+              {AssignUser}
+            </span>
+          )}
         </div>
-        <div className="flex items-center justify-between p-3 rounded-md bg-white shadow-sm">
-          <div className="mr-5">
-            <span className="text-sm text-gray-500">Assigned to:</span>
-            {isEditingAssignee ? (
-              <select
-                value={editedAssignee}
-                onChange={handleAssigneeChange}
-                onBlur={() => setIsEditingAssignee(false)}
-                className="text-lg font-medium text-gray-800 bg-white border px-1"
-                autoFocus
-              >
-                {userList.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.firstName} {user.lastName}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <h1
-                className="text-lg font-medium text-gray-800 cursor-pointer"
-                onClick={() => handleAssignedClick()}
-              >
-                {AssignUser}
-              </h1>
-            )}
-          </div>
-
-          <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {canEdit && (
             <button
-              disabled={handleDisable === 0}
-              onClick={handlePrevious}
-              className={`px-4 py-2 rounded transition-colors text-white ${
-                handleDisable === 0
-                  ? "bg-blue-300 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
-              }`}
+              type="button"
+              onClick={handleDelete}
+              aria-label="Delete"
+              className="p-2 rounded-md bg-red-100 hover:bg-red-200 text-red-600"
             >
-              Previous
+              <Trash2 />
             </button>
+          )}
 
-            <button
-              disabled={handleDisable >= 2}
-              onClick={handleNext}
-              className={`px-4 py-2 rounded transition-colors text-white ${
-                handleDisable >= 2
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-black hover:bg-gray-800"
-              }`}
-            >
-              Next
-            </button>
-          </div>
+          <button
+            disabled={handleDisable === 0}
+            onClick={handlePrevious}
+            className={`px-4 py-2 rounded-md transition-colors text-white ${
+              handleDisable === 0
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
+            }`}
+          >
+            Previous
+          </button>
+
+          <button
+            disabled={handleDisable >= 2}
+            onClick={handleNext}
+            className={`px-4 py-2 rounded-md transition-colors text-white ${
+              handleDisable >= 2
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-black hover:bg-gray-800"
+            }`}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { taskValidationSchema as validationSchema } from "../utils/validations/taskValidation";
 import { useFormik } from "formik";
 
@@ -29,8 +29,8 @@ const ticketStages = ["Todo", "InProgress", "Completed"];
 
 const Tasks = () => {
   const dispatch = useDispatch();
-  const { todoList, email, isLoading } = useSelector((state) => state.todos);
-  const { userList } = useSelector((state) => state.users);
+  const { todoList, isLoading } = useSelector((state) => state.todos);
+  const { userList, currentUserData } = useSelector((state) => state.users);
 
   const {
     addSuccess,
@@ -73,7 +73,15 @@ const Tasks = () => {
           setIsEditing(false);
           setEditIndex(null);
         } else {
-          await dispatch(addTodo(values)).unwrap();
+          const assignedUser = userList.find((user) => user.uid === userID);
+          if (assignedUser) {
+            await dispatch(
+              addTodo({ ...values, assignedTo: assignedUser.id })
+            ).unwrap();
+          } else {
+            toast.error("Assigned user not found");
+          }
+
           toast.success(addSuccess);
         }
 
@@ -216,7 +224,16 @@ const Tasks = () => {
         {authLoading || isLoading ? (
           <div className="loader">Loading...</div>
         ) : (
-          <h1 className="font-bold text-3xl">{`Welcome!, ${email}`}</h1>
+          <h1 className="font-bold text-3xl text-center flex items-center justify-center gap-2">
+            {currentUserData && (
+              <>
+                Welcome, {currentUserData.firstName} {currentUserData.lastName}
+                <span className="bg-blue-100 text-blue-700 text-sm font-semibold px-2 py-1 rounded-full">
+                  {currentUserData.role || "User"}
+                </span>
+              </>
+            )}
+          </h1>
         )}
       </div>
       <div className="flex justify-center space-x-4 p-4">

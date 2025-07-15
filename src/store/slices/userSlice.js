@@ -1,7 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
-import { retry } from "@reduxjs/toolkit/query";
+import { getAuth } from "firebase/auth";
+
+const initialState = {
+  userList: [],
+  isLoading: false,
+  currentUserData: null,
+};
 
 export const fetchAllUsers = createAsyncThunk("users/fetchAll", async () => {
   const querySnapshot = await getDocs(collection(db, "users"));
@@ -9,27 +15,33 @@ export const fetchAllUsers = createAsyncThunk("users/fetchAll", async () => {
     id: doc.id,
     ...doc.data(),
   }));
-  return users;
+
+  const currentUser = getAuth().currentUser;
+  const currentUserData =
+    users.find((user) => user.uid === currentUser?.uid) || null;
+
+  return {
+    users,
+    currentUserData,
+  };
 });
 
 const userSlice = createSlice({
   name: "users",
-  initialState: {
-    userList: [],
-    isLoading: false,
-  },
+  initialState,
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllUsers.pending, (state) => {
         return {
           ...state,
-          isLoading: false,
+          isLoading: true,
         };
       })
       .addCase(fetchAllUsers.fulfilled, (state, action) => {
         return {
           ...state,
-          userList: action.payload,
+          userList: action.payload.users,
+          currentUserData: action.payload.currentUserData,
           isLoading: false,
         };
       })
