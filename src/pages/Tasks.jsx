@@ -33,7 +33,6 @@ const Tasks = () => {
   const { todoList, isLoading } = useSelector((state) => state.todos);
   let { userList, currentUserData, isLoading: isUsersLoading } = useSelector((state) => state.users);
 
-
   const {
     addSuccess,
     taskIdMissing,
@@ -215,7 +214,7 @@ const Tasks = () => {
     filter !== "All"
       ? todoList.filter((item) => item.assignedTo === filter)
       : todoList;
-  console.log("filteredTodos", filteredTodos)
+
   const tasksByStatus = ticketStages.reduce((acc, status) => {
     acc[status] = filteredTodos.filter((item) => item.status === status);
     return acc;
@@ -224,99 +223,131 @@ const Tasks = () => {
   const { handleChange, handleSubmit, values } = formik;
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[	#F8FAFC]">
       <Header />
-      <div className="flex items-center justify-center p-5">
-        {authLoading || isLoading ? (
-          <div className="loader">Loading...</div>
-        ) : (
-          <h1 className="font-bold text-3xl text-center flex items-center justify-center gap-2">
-            {currentUserData && (
-              <>
-                Welcome, {currentUserData?.firstName} {currentUserData?.lastName}
-                <span className="bg-blue-100 text-blue-700 text-sm font-semibold px-2 py-1 rounded-full">
-                  {currentUserData?.role || "User"}
-                </span>
-              </>
-            )}
-          </h1>
-        )}
-      </div>
-      <div className="flex justify-center space-x-4 p-4">
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          disabled={isUsersLoading}
-          className="w-60 text-sm px-3 py-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-500"
-        >
-          {isUsersLoading ? (
-            <option>Loading users...</option>
-          ) : userList.length === 0 ? (
-            <option>No users available</option>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 px-4 py-6">
+        <div className="text-center sm:text-left flex-1">
+          {authLoading || isLoading ? (
+            <div className="loader">Loading...</div>
           ) : (
-            <>
-              <option value="All">All</option>
-              {userList.map((user) => (
-                <option key={user.id} value={user.uid}>
-                  {user.firstName} {user.lastName}
-                </option>
-              ))}
-            </>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              Welcome, {currentUserData?.firstName} {currentUserData?.lastName}
+              <span className="bg-blue-100 text-blue-700 text-xs sm:text-sm font-medium px-3 py-1 rounded-full mt-2.5">
+                {currentUserData?.role || "User"}
+              </span>
+            </h1>
           )}
-        </select>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded transition"
+          >
+            + Create Task
+          </button>
+          <div className="relative w-full sm:w-64">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              disabled={isUsersLoading}
+              className="appearance-none w-full text-sm px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              {isUsersLoading ? (
+                <option>Loading users...</option>
+              ) : userList.length === 0 ? (
+                <option>No users available</option>
+              ) : (
+                <>
+                  <option value="All">All</option>
+                  {userList.map((user) => (
+                    <option key={user.id} value={user.uid}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-        {ticketStages.map((status) => (
-          <div
-            key={status}
-            onDragOver={allowDrop}
-            onDrop={() => handleDrop(status)}
-            className="border p-6 space-y-3 rounded"
-          >
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold mb-4 text-center">
-                {status}
-              </h2>
-              {status === "Todo" && (
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-black px-4 py-2 rounded text-cyan-50 mr-3"
-                >
-                  Add
-                </button>
-              )}
-            </div>
-            {tasksByStatus[status].map((item) => {
-              const assignedUser = userList.find(
-                (user) => user.id === item.assignedTo
-              );
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 pb-10">
+        {ticketStages.map((status) => {
+          const containerBg =
+            status === "Todo"
+              ? "bg-slate-100 border-slate-200"
+              : status === "InProgress"
+                ? "bg-yellow-50 border-yellow-200"
+                : status === "Completed"
+                  ? "bg-green-50 border-green-200"
+                  : "";
 
-              return (
-                <Card
-                  key={item.id}
-                  title={item.title}
-                  description={item.description}
-                  isCompleted={item.isCompleted}
-                  handleDisable={item.currentStep}
-                  AssignUserId={assignedUser?.uid}
-                  AssignUser={
-                    assignedUser
-                      ? `${assignedUser.firstName} ${assignedUser.lastName}`
-                      : "not assigned"
-                  }
-                  onUpdate={(field, value) =>
-                    handleInlineUpdate(todoList.indexOf(item), field, value)
-                  }
-                  handleDelete={() => handleDelete(todoList.indexOf(item))}
-                  handleNext={() => handleNext(todoList.indexOf(item))}
-                  handlePrevious={() => handlePrevious(todoList.indexOf(item))}
-                  onDragStart={() => handleDragStart(todoList.indexOf(item))}
-                />
-              );
-            })}
-          </div>
-        ))}
+          const headerColor =
+            status === "Todo"
+              ? "text-slate-800"
+              : status === "InProgress"
+                ? "text-yellow-800"
+                : "text-green-800";
+
+          return (
+            <div
+              key={status}
+              onDragOver={allowDrop}
+              onDrop={() => handleDrop(status)}
+              className={`rounded-lg p-4 shadow-sm transition hover:shadow-md border ${containerBg}`}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className={`text-lg font-semibold ${headerColor}`}>
+                  {status}
+                  <span className="ml-2 text-sm text-gray-500 bg-gray-300 px-2 py-1 rounded-md">
+                    {tasksByStatus[status].length}
+                  </span>
+                </h2>
+              </div>
+
+
+              <div className="space-y-4 ]">
+                {tasksByStatus[status].map((item) => {
+                  const assignedUser = userList.find((user) => user.id === item.assignedTo);
+                  console.log('item :>> ', item?.status);
+                  return (
+                    <Card
+                      key={item.id}
+                      title={item.title}
+                      progress={item?.status}
+                      description={item.description}
+                      handleDisable={item.currentStep}
+                      AssignUserId={assignedUser?.uid}
+                      AssignUser={
+                        assignedUser
+                          ? `${assignedUser.firstName} ${assignedUser.lastName}`
+                          : "Not Assigned"
+                      }
+                      onUpdate={(field, value) =>
+                        handleInlineUpdate(todoList.indexOf(item), field, value)
+                      }
+                      handleDelete={() => handleDelete(todoList.indexOf(item))}
+                      handleNext={() => handleNext(todoList.indexOf(item))}
+                      handlePrevious={() => handlePrevious(todoList.indexOf(item))}
+                      onDragStart={() => handleDragStart(todoList.indexOf(item))}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <Modal
@@ -328,6 +359,7 @@ const Tasks = () => {
         isEditing={isEditing}
       />
     </div>
+
   );
 };
 
