@@ -18,7 +18,6 @@ import {
 } from "../store/slices/todoSlice";
 import { toast } from "react-toastify";
 import { fetchAllUsers } from "../store/slices/userSlice";
-import { CircularProgress } from "@mui/material";
 
 const initialValues = {
   title: "",
@@ -222,8 +221,6 @@ const Tasks = () => {
     return acc;
   }, {});
 
-  console.log(filter)
-
   const { handleChange, handleSubmit, values } = formik;
 
   return (
@@ -249,17 +246,16 @@ const Tasks = () => {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="text-sm px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          disabled={isUsersLoading}
+          className="w-60 text-sm px-3 py-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-500"
         >
           {isUsersLoading ? (
-            <option disabled>
-              <CircularProgress size={24} />
-            </option>
+            <option>Loading users...</option>
           ) : userList.length === 0 ? (
-            <option disabled>No users available</option>
+            <option>No users available</option>
           ) : (
             <>
-              <option>All</option>
+              <option value="All">All</option>
               {userList.map((user) => (
                 <option key={user.id} value={user.uid}>
                   {user.firstName} {user.lastName}
@@ -268,8 +264,8 @@ const Tasks = () => {
             </>
           )}
         </select>
-
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         {ticketStages.map((status) => (
           <div
