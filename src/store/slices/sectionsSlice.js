@@ -11,7 +11,6 @@ import {
   doc,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { act } from 'react';
 
 const initialState = {
   sections: [],

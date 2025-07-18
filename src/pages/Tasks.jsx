@@ -161,10 +161,8 @@ const Tasks = () => {
   }, [userID, dispatch]);
 
   useEffect(() => {
-
     dispatch(fetchAllUsers());
     dispatch(fetchSections());
-
   }, [dispatch]);
 
   const isPageLoading = isLoading && isUsersLoading;

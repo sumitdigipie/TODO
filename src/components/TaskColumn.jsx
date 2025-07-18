@@ -2,19 +2,22 @@ import React, { useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import Card from './Card';
 import { updateTodo } from '../store/slices/todoSlice';
+import { updateSectionName } from '../store/slices/sectionsSlice';
 
 const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex }) => {
+
+  const [editingSection, setEditingSection] = useState(null);
 
   const { todoList, isLoading } = useSelector((state) => state.todos);
   const { userList } = useSelector(
     (state) => state.users
   );
-  const dispatch = useDispatch();
-
   const ticketStages = useMemo(
     () => sections.sections.map((section) => section.status),
     [sections]
   );
+  const dispatch = useDispatch();
+
 
   const allowDrop = (e) => {
     e.preventDefault();
@@ -29,6 +32,11 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
     setDragCardIndex(null);
   };
+
+  const handleSectionTitleChange = (order, newTitle) => {
+    dispatch(updateSectionName({ id: order, status: newTitle }));
+  };
+
 
   const moveTaskStep = (index, direction) => {
     const task = todoList[index];
@@ -61,7 +69,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     acc[status] = filteredTodos.filter((item) => item.status === status);
     return acc;
   }, {});
-
+  console.log('editingSection :>> ', editingSection);
   return (
     <>
       {sections.sections?.map((section) => (
@@ -73,13 +81,31 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
           onDrop={() => handleDrop(section)}
           className="flex flex-col rounded-xl shadow-md hover:shadow-lg transition border min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-white"
         >
-          <div className="p-4 border-b rounded-t-xl font-semibold bg-gray-100 text-gray-800 flex justify-between items-center">
-            <span className="text-lg">{section.status}</span>
-            <span className="text-sm bg-white text-gray-600 px-2 py-0.5 rounded-full shadow-sm">
+          <div className="p-4 border-b rounded-t-xl font-semibold bg-gray-100 text-gray-800 flex justify-between items-center h-[48px]">
+            {editingSection === section.order ? (
+              <input
+                type="text"
+                className="text-lg bg-white border rounded px-2 py-1 w-full h-[32px] truncate"
+                style={{ minWidth: 0 }}
+                value={section.status}
+                onChange={(e) =>
+                  handleSectionTitleChange(section.id, e.target.value)
+                }
+                onBlur={() => setEditingSection(null)}
+                autoFocus
+              />
+            ) : (
+              <span
+                className="text-lg cursor-pointer"
+                onClick={() => setEditingSection(section.order)}
+              >
+                {section.status}
+              </span>
+            )}
+            <span className="text-sm bg-white text-gray-600 px-2 py-0.5 rounded-full shadow-sm ml-3">
               {tasksByStatus[section.status]?.length || 0}
             </span>
           </div>
-
           <div className="p-4 space-y-4 overflow-y-auto max-h-[70vh] custom-scrollbar">
             {isLoading ? (
               Array(3).fill(null).map((_, i) => (
@@ -119,7 +145,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
               })
             )}
           </div>
-        </div>
+        </div >
       ))}
     </>
   )
