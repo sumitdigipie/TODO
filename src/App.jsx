@@ -15,7 +15,10 @@ const App = () => {
       <Routes>
         <Route element={<Layout />}>
           <Route element={<PrivateRoute />}>
-            <Route path="/tasks" element={<Tasks />} />
+            <Route
+              path="/tasks"
+              element={<Tasks />}
+            />
           </Route>
           <Route element={<PublicRoute />}>
             <Route path="/" element={<Login />} />

@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
-import { fetchAllUsers } from "../store/slices/userSlice";
+import { fetchAllUsers } from "../../store/slices/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 const Modal = ({

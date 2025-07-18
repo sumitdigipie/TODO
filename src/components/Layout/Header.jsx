@@ -1,7 +1,7 @@
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import toastMessages from "../utils/toastMessages";
+import toastMessages from "../../utils/toastMessages";
 
 const Header = () => {
   const auth = getAuth();
@@ -29,7 +29,7 @@ const Header = () => {
   return (
     <header className="bg-white shadow-md px-6 py-4 flex justify-between items-center sticky top-0 z-50">
       <div className="flex items-center space-x-3">
-        <h1 className="text-2xl font-semibold text-gray-800">Todo App</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Task management</h1>
       </div>
 
       <button

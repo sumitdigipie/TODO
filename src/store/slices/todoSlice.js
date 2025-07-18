@@ -12,7 +12,7 @@ import { db, auth } from "../../firebase";
 
 const initialState = {
   todoList: [],
-  isLoading: false,
+  isLoading: true,
 };
 
 export const fetchTodos = createAsyncThunk("todos/fetchTodos", async () => {

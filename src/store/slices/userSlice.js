@@ -5,7 +5,7 @@ import { getAuth } from "firebase/auth";
 
 const initialState = {
   userList: [],
-  isLoading: false,
+  isLoading: true,
   currentUserData: null,
 };
 
