@@ -9,6 +9,7 @@ import {
   orderBy,
   writeBatch,
   doc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
 
@@ -62,6 +63,20 @@ export const addSection = createAsyncThunk(
   }
 );
 
+
+export const deleteSection = createAsyncThunk(
+  'sections/deleteSection',
+  async (id, { rejectWithValue }) => {
+    try {
+      const sectionRef = doc(db, 'sections', id);
+      await deleteDoc(sectionRef);
+      return id;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 export const updateSectionOrder = createAsyncThunk(
   'sections/updateSectionOrder',
   async (sections, { rejectWithValue }) => {
@@ -92,8 +107,6 @@ export const updateSectionName = createAsyncThunk(
     }
   }
 );
-
-
 
 const sectionsSlice = createSlice({
   name: 'sections',
@@ -134,6 +147,24 @@ const sectionsSlice = createSlice({
       })
       .addCase(updateSectionOrder.fulfilled, (state, action) => {
         state.sections = action.payload;
+      })
+      .addCase(deleteSection.pending, (state) => {
+        return {
+          ...state
+        }
+      })
+      .addCase(deleteSection.fulfilled, (state, action) => {
+        const sectionDelete = state.sections.filter((section) => section.sectionId !== action.payload);
+        return {
+          ...state,
+          sections: sectionDelete
+        }
+      })
+      .addCase(deleteSection.rejected, (state, action) => {
+        return {
+          ...state,
+          loading: false,
+        }
       })
 
   },

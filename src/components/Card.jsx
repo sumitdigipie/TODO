@@ -20,7 +20,10 @@ const Card = ({
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { currentUserData } = useSelector((state) => state.users);
+  const sections = useSelector((state) => state.sections);
   const dispatch = useDispatch();
+
+  let sectionLength = sections?.sections.length;
 
   useEffect(() => {
     dispatch(fetchAllUsers());
@@ -28,14 +31,6 @@ const Card = ({
 
   const canEdit =
     currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
-
-  // const borderProgressStyle = progress === "Todo"
-  //   ? "border-l-gray-400 border-l-4"
-  //   : progress === "InProgress"
-  //     ? "border-l-yellow-500 border-l-4"
-  //     : progress === "Completed"
-  //       ? "border-l-green-500 border-l-4"
-  //       : "border-l-gray-300 border-l-4";
 
   return (
     <div>
@@ -87,9 +82,9 @@ const Card = ({
             </button>
 
             <button
-              disabled={handleDisable >= 2}
+              disabled={handleDisable >= sectionLength - 1}
               onClick={handleNext}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${handleDisable >= 2
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${handleDisable >= sectionLength - 1
                 ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                 : "bg-black text-white hover:bg-gray-800"
                 }`}

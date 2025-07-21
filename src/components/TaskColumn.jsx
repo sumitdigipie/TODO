@@ -2,11 +2,12 @@ import React, { useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import Card from './Card';
 import { deleteTodo, updateTodo } from '../store/slices/todoSlice';
-import { updateSectionName } from '../store/slices/sectionsSlice';
+import { deleteSection, updateSectionName } from '../store/slices/sectionsSlice';
 import { toast } from 'react-toastify';
+import { Trash2 } from 'lucide-react';
 
-const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex, dragType, setDragType }) => {
-  console.log("Calling");
+const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex, setDragType }) => {
+
   const [editingSection, setEditingSection] = useState(null);
   const [tempTitle, setTempTitle] = useState("");
   const { todoList, isLoading } = useSelector((state) => state.todos);
@@ -25,7 +26,6 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
   };
 
   const handleSectionTitleChange = (order, newTitle) => {
-    console.log('order :>> ', order);
     dispatch(updateSectionName({ id: order, status: newTitle }));
   };
 
@@ -49,31 +49,9 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     setDragType(null);
   };
 
-
-  // const moveTaskStep = (section, index, direction) => {
-  //   const task = todoList[index];
-  //   if (!task) return;
-
-  //   const currentStep = ticketStages.indexOf(task.sectionId);
-  //   const newStep = currentStep + direction;
-  //   console.log('newStep :>> ', newStep);
-  //   if (newStep >= 0 && newStep < ticketStages.length) {
-  //     dispatch(
-  //       updateTodo({
-  //         sectionId: task.sectionId,
-  //         updates: {
-  //           sectionId: section.sectionId,
-  //           currentStep: newStep,
-  //         },
-  //       })
-  //     );
-  //   }
-  // };
-
   const moveTaskStep = (index, direction) => {
     const task = todoList[index];
     if (!task) return;
-
     const currentStep = ticketStages.indexOf(task.sectionId);
     const newStep = currentStep + direction;
 
@@ -104,6 +82,10 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     }
   }
 
+  const handleSectionDelete = (sectionId) => {
+    dispatch(deleteSection(sectionId));
+  };
+
   const handleInlineUpdate = (index, field, value) => {
     const task = todoList[index];
     if (!task || task[field] === value) return;
@@ -132,11 +114,11 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     acc[sectionId] = filteredTodos.filter((item) => item.sectionId === sectionId);
     return acc;
   }, {});
-  console.log('editingSection :>> ', editingSection);
+
   return (
     <>
       {sections.sections?.map((section) => (
-        <div div
+        <div
           draggable
           onDragStart={() => handleSectionDragStart(section.order)}
           key={section.status}
@@ -145,7 +127,6 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
           className="flex flex-col rounded-xl shadow-md hover:shadow-lg transition border min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-white"
         >
           <div className="p-4 border-b rounded-t-xl font-semibold bg-gray-100 text-gray-800 flex justify-between items-center h-[48px]">
-            {console.log('section :>> ', section)}
             {editingSection === section.order ? (
               < input
                 type="text"
@@ -159,11 +140,19 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
                     setEditingSection(null);
                   }
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (tempTitle.trim() && tempTitle !== section.status) {
+                      handleSectionTitleChange(section.sectionId, tempTitle);
+                    }
+                    setEditingSection(null);
+                  }
+                }}
                 autoFocus
               />
             ) : (
               <span
-                className="text-lg cursor-pointer"
+                className="text-lg cursor-pointer truncate"
                 onClick={() => {
                   setEditingSection(section.order);
                   setTempTitle(section.status);
@@ -173,9 +162,20 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
               </span>
             )}
 
-            <span className="text-sm bg-white text-gray-600 px-2 py-0.5 rounded-full shadow-sm ml-3">
-              {tasksByStatus[section.sectionId]?.length || 0}
-            </span>
+            <div className='ml-3 flex'>
+              <button
+                className="ml-auto text-gray-500 hover:text-red-600"
+                onClick={() => {
+                  handleSectionDelete(section.sectionId)
+                }}
+                title="Delete Section"
+              >
+                <Trash2 size={18} />
+              </button>
+              <span className="text-sm bg-white text-gray-600 px-2 py-0.5 rounded-full shadow-sm ml-3">
+                {tasksByStatus[section.sectionId]?.length || 0}
+              </span>
+            </div>
           </div>
           <div className="p-4 space-y-4 overflow-y-auto max-h-[70vh] custom-scrollbar">
             {isLoading ? (
@@ -208,8 +208,8 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
                       handleInlineUpdate(todoList.indexOf(item), field, value)
                     }
                     handleDelete={() => handleDelete(item.id)}
-                    handleNext={() => moveTaskStep(section, todoList.indexOf(item), 1)}
-                    handlePrevious={() => moveTaskStep(section, todoList.indexOf(item), -1)}
+                    handleNext={() => moveTaskStep(todoList.indexOf(item), 1)}
+                    handlePrevious={() => moveTaskStep(todoList.indexOf(item), -1)}
                     onDragStart={() => handleDragStart(todoList.indexOf(item))}
                   />
                 );
