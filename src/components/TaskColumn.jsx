@@ -5,7 +5,7 @@ import { deleteTodo, updateTodo } from '../store/slices/todoSlice';
 import { updateSectionName } from '../store/slices/sectionsSlice';
 import { toast } from 'react-toastify';
 
-const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex }) => {
+const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex, dragType, setDragType }) => {
 
   const [editingSection, setEditingSection] = useState(null);
   const [tempTitle, setTempTitle] = useState("");
@@ -42,7 +42,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
   //   dispatch(updateSectionName({ id: order, status: newTitle }));
   // };
 
-  const handleDrop = (section) => {
+  const handleDrop = async (section) => {
     const { order } = section;
     setSectionDropIndex(order);
 
@@ -51,7 +51,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     const task = todoList[dragCardIndex];
     const nextStep = ticketStages.indexOf(section?.sectionId);
 
-    dispatch(
+    await dispatch(
       updateTodo({
         taskId: task.id,
         updates: { sectionId: section.sectionId, currentStep: nextStep },
@@ -59,6 +59,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     );
 
     setDragCardIndex(null);
+    setDragType(null);
   };
 
 
@@ -103,7 +104,10 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     }
   };
 
-  const handleDragStart = (index) => setDragCardIndex(index);
+  const handleDragStart = (index) => {
+    setDragCardIndex(index)
+    setDragType("card");
+  };
 
   const handleDelete = (id) => {
     try {

@@ -111,7 +111,7 @@ export const updateTodo = createAsyncThunk(
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("User not authenticated");
 
-    const taskDocRef = doc(db, "tasks", taskId); // Use task ID (document ID)
+    const taskDocRef = doc(db, "tasks", taskId);
     await updateDoc(taskDocRef, updates);
     return { taskId, updates };
   }

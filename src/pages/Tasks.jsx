@@ -52,6 +52,7 @@ const Tasks = () => {
   const [submitting, setSubmitting] = useState(false);
   const [sectionDropIndex, setSectionDropIndex] = useState(null)
   const [dragCardIndex, setDragCardIndex] = useState(null);
+  const [dragType, setDragType] = useState(null);
 
 
   const formik = useFormik({
@@ -119,12 +120,15 @@ const Tasks = () => {
   };
 
   const handleSectionDragStart = (index) => {
-    if (dragCardIndex) return;
+    if (dragCardIndex !== null) return;
+    if (dragType === "card") return;
+
+    setDragType("section");
     setDragSectionIndex(index);
   };
 
-  const handleSectionDrop = (dropIndex) => {
-    if (dragCardIndex || dragSectionIndex === null || dragSectionIndex === dropIndex) return;
+  const handleSectionDrop = async (dropIndex) => {
+    if (dragCardIndex !== null || dragSectionIndex === null || dragSectionIndex === dropIndex) return;
 
     const updatedSections = [...sections.sections];
     const draggedItem = updatedSections.splice(dragSectionIndex, 1)[0];
@@ -136,8 +140,10 @@ const Tasks = () => {
       }
     });
 
-    dispatch(updateSectionOrder(reordered));
+    await dispatch(updateSectionOrder(reordered));
+    setDragCardIndex(null);
     setDragSectionIndex(null);
+    setDragType(null);
   };
 
   const allowDrop = (e) => {
@@ -232,6 +238,8 @@ const Tasks = () => {
                 setSectionDropIndex={setSectionDropIndex}
                 setDragCardIndex={setDragCardIndex}
                 dragCardIndex={dragCardIndex}
+                setDragType={setDragType}
+                dragType={dragType}
               />
               <div className="flex flex-col top-0 justify-start items-center border-gray-300 min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-gray-50 transition-all duration-200 p-4">
                 {isSectionModalOpen ? (
