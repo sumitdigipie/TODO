@@ -6,7 +6,7 @@ import { updateSectionName } from '../store/slices/sectionsSlice';
 import { toast } from 'react-toastify';
 
 const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex, dragType, setDragType }) => {
-
+  console.log("Calling");
   const [editingSection, setEditingSection] = useState(null);
   const [tempTitle, setTempTitle] = useState("");
   const { todoList, isLoading } = useSelector((state) => state.todos);
@@ -24,23 +24,10 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     e.preventDefault();
   };
 
-  // const handleDrop = (section) => {
-  //   const { order } = section
-  //   setSectionDropIndex(order)
-
-  //   if (dragCardIndex === null) return;
-
-  //   const task = todoList[dragCardIndex];
-
-  //   const nextStep = ticketStages.indexOf(section?.sectionId);
-
-  //   dispatch(updateTodo({ sectionId: task.sectionId, updates: { sectionId: section.sectionId, currentStep: nextStep } }));
-  //   setDragCardIndex(null);
-  // };
-
-  // const handleSectionTitleChange = (order, newTitle) => {
-  //   dispatch(updateSectionName({ id: order, status: newTitle }));
-  // };
+  const handleSectionTitleChange = (order, newTitle) => {
+    console.log('order :>> ', order);
+    dispatch(updateSectionName({ id: order, status: newTitle }));
+  };
 
   const handleDrop = async (section) => {
     const { order } = section;
@@ -83,7 +70,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
   //   }
   // };
 
-  const moveTaskStep = (section, index, direction) => {
+  const moveTaskStep = (index, direction) => {
     const task = todoList[index];
     if (!task) return;
 
@@ -145,11 +132,11 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     acc[sectionId] = filteredTodos.filter((item) => item.sectionId === sectionId);
     return acc;
   }, {});
-
+  console.log('editingSection :>> ', editingSection);
   return (
     <>
       {sections.sections?.map((section) => (
-        <div
+        <div div
           draggable
           onDragStart={() => handleSectionDragStart(section.order)}
           key={section.status}
@@ -158,8 +145,9 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
           className="flex flex-col rounded-xl shadow-md hover:shadow-lg transition border min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-white"
         >
           <div className="p-4 border-b rounded-t-xl font-semibold bg-gray-100 text-gray-800 flex justify-between items-center h-[48px]">
+            {console.log('section :>> ', section)}
             {editingSection === section.order ? (
-              <input
+              < input
                 type="text"
                 className="text-lg bg-white border rounded px-2 py-1 w-full h-[32px] truncate"
                 style={{ minWidth: 0 }}
@@ -167,9 +155,9 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
                 onChange={(e) => setTempTitle(e.target.value)}
                 onBlur={() => {
                   if (tempTitle.trim() && tempTitle !== section.status) {
-                    handleSectionTitleChange(section.id, tempTitle);
+                    handleSectionTitleChange(section.sectionId, tempTitle);
+                    setEditingSection(null);
                   }
-                  setEditingSection(null);
                 }}
                 autoFocus
               />
