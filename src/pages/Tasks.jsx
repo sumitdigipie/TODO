@@ -53,6 +53,7 @@ const Tasks = () => {
   const [sectionDropIndex, setSectionDropIndex] = useState(null)
   const [dragCardIndex, setDragCardIndex] = useState(null);
   const [dragType, setDragType] = useState(null);
+  const [sectionId, setSectionId] = useState(null);
 
 
   const formik = useFormik({
@@ -64,7 +65,7 @@ const Tasks = () => {
         return;
       }
 
-      const sectionId = sections?.sections?.[0]?.id;
+      // const sectionId = sections?.sections?.[0]?.id;
       setSubmitting(true);
       try {
         if (isEditing) {
@@ -181,7 +182,7 @@ const Tasks = () => {
     isPageLoading ?
       (<Loader />) :
       (
-        <div className="bg-[#F8FAFC] min-h-[calc(100vh-4rem)] pb-10">
+        <div className="bg-[#F8FAFC] h-screen">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-6 gap-6">
             <div className="flex gap-2 items-center">
               <h1 className="text-3xl font-bold text-gray-900">
@@ -195,13 +196,6 @@ const Tasks = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition text-sm w-full sm:w-auto"
-              >
-                + Create Task
-              </button>
-
               <div className="relative w-full sm:w-64">
                 <select
                   value={filter}
@@ -233,12 +227,12 @@ const Tasks = () => {
           </div>
           <div className="flex flex-col overflow-x-auto px-4">
             <div className="flex space-x-6 pb-12"
-              // onDrop={() => handleSectionDrop(sectionDropIndex)}
               onDragOver={allowDrop}
             >
               <TaskColumn
                 filter={filter}
                 sections={sections}
+                setIsModalOpen={setIsModalOpen}
                 handleSectionDragStart={handleSectionDragStart}
                 setSectionDropIndex={setSectionDropIndex}
                 setDragCardIndex={setDragCardIndex}
@@ -246,6 +240,7 @@ const Tasks = () => {
                 setDragType={setDragType}
                 handleSectionDrop={handleSectionDrop}
                 dragType={dragType}
+                setSectionId={setSectionId}
               />
               <div className="flex flex-col top-0 justify-start items-center border-gray-300 min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-gray-50 transition-all duration-200 p-4">
                 {isSectionModalOpen ? (

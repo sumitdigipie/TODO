@@ -17,17 +17,21 @@ const Card = ({
   handleDisable,
   onDragStart,
   onUpdate,
+  sectionIndex,
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { currentUserData } = useSelector((state) => state.users);
   const sections = useSelector((state) => state.sections);
   const dispatch = useDispatch();
 
-  let sectionLength = sections?.sections.length;
-
+  let sectionLength = sections?.sections?.length;
   useEffect(() => {
     dispatch(fetchAllUsers());
   }, [dispatch]);
+
+  const sectionOrderIndex = sections?.sections?.findIndex(
+    (s) => s.sectionId === progress
+  );
 
   const canEdit =
     currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
@@ -71,9 +75,9 @@ const Card = ({
             )}
 
             <button
-              disabled={handleDisable === 0}
+              disabled={sectionOrderIndex === 0}
               onClick={handlePrevious}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${handleDisable === 0
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${sectionOrderIndex === 0
                 ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                 : "bg-blue-500 text-white hover:bg-blue-600"
                 }`}
@@ -82,15 +86,16 @@ const Card = ({
             </button>
 
             <button
-              disabled={handleDisable >= sectionLength - 1}
+              disabled={sectionOrderIndex === sectionLength - 1}
               onClick={handleNext}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${handleDisable >= sectionLength - 1
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${sectionOrderIndex === sectionLength - 1
                 ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                 : "bg-black text-white hover:bg-gray-800"
                 }`}
             >
               Next
             </button>
+
           </div>
         </div>
       </div>
