@@ -52,59 +52,6 @@ export const deleteTodo = createAsyncThunk(
   }
 );
 
-// export const updateTodo = createAsyncThunk(
-//   "todos/updateTodo",
-//   async ({ sectionId, updates }) => {
-//     const userId = auth.currentUser?.uid;
-//     if (!userId) throw new Error("User not authenticated");
-
-//     // try {
-
-//     //   const taskDocRef = doc(db, "tasks", sectionId);
-
-//     //   const updatedData = {
-//     //     sectionId: updates.sectionId,  // Replace the old sectionId with the new one
-//     //     currentStep: updates.currentStep,  // Replace the currentStep with the new one
-//     //   };
-
-//     //   await updateDoc(taskDocRef, updatedData);
-
-//     // } catch (error) {
-//     //   console.log('error: ', error);
-//     // }
-
-//     try {
-//       // Query the "tasks" collection for the document that has the matching sectionId
-//       const taskDocRef = doc(db, "tasks", sectionId);  // Fetch the document based on the sectionId
-
-//       // Fetch the document snapshot
-//       const taskDocSnap = await getDoc(taskDocRef);
-//       console.log('taskDocSnap: ', taskDocSnap.data());
-
-//       if (!taskDocSnap.exists()) {
-//         console.log("No task document found with sectionId: ", sectionId);
-//       } else {
-//         console.log("Document found! Proceeding to update...");
-
-//         // Prepare the updates to replace the sectionId and currentStep
-//         const updatedData = {
-//           sectionId: updates.sectionId,
-//           currentStep: updates.currentStep,  // Replace the currentStep with the new one
-//         };
-
-//         // Update the document with the new sectionId and currentStep
-//         await updateDoc(taskDocRef, updatedData);
-//         console.log("Document successfully updated!");
-//       }
-//     } catch (error) {
-//       console.error("Error fetching or updating document:", error);
-//     }
-
-//     return { sectionId, updates };
-//   }
-// );
-
-
 export const updateTodo = createAsyncThunk(
   "todos/updateTodo",
   async ({ taskId, updates }) => {

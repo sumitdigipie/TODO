@@ -32,7 +32,6 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
   const handleDrop = async (section) => {
     const { order } = section;
     setSectionDropIndex(order);
-
     if (dragCardIndex === null) return;
 
     const task = todoList[dragCardIndex];
@@ -47,6 +46,12 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
 
     setDragCardIndex(null);
     setDragType(null);
+  };
+
+  const handleDragStart = (index) => {
+    console.log('index :>> ', index);
+    setDragCardIndex(index)
+    setDragType("card");
   };
 
   const moveTaskStep = (index, direction) => {
@@ -69,10 +74,6 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     }
   };
 
-  const handleDragStart = (index) => {
-    setDragCardIndex(index)
-    setDragType("card");
-  };
 
   const handleDelete = (id) => {
     try {

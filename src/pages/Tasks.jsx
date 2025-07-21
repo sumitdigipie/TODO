@@ -167,8 +167,11 @@ const Tasks = () => {
 
   useEffect(() => {
     dispatch(fetchAllUsers());
-    dispatch(fetchSections());
   }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchSections());
+  }, [sections.sections.length, todoList]);
 
   const isPageLoading = isLoading && isUsersLoading;
 
