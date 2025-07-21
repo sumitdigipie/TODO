@@ -6,7 +6,7 @@ import { deleteSection, updateSectionName } from '../store/slices/sectionsSlice'
 import { toast } from 'react-toastify';
 import { Trash2 } from 'lucide-react';
 
-const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex, setDragType }) => {
+const TaskColumn = ({ filter, sections, handleSectionDragStart, handleSectionDrop, setDragCardIndex, dragCardIndex, dragType, setDragType }) => {
 
   const [editingSection, setEditingSection] = useState(null);
   const [tempTitle, setTempTitle] = useState("");
@@ -20,7 +20,6 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
   );
   const dispatch = useDispatch();
 
-
   const allowDrop = (e) => {
     e.preventDefault();
   };
@@ -30,8 +29,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
   };
 
   const handleDrop = async (section) => {
-    const { order } = section;
-    setSectionDropIndex(order);
+    console.log('section :>> ', section);
     if (dragCardIndex === null) return;
 
     const task = todoList[dragCardIndex];
@@ -48,11 +46,12 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     setDragType(null);
   };
 
-  const handleDragStart = (index) => {
-    console.log('index :>> ', index);
-    setDragCardIndex(index)
+  const handleDragStart = (index, e) => {
+    e.stopPropagation();
+    setDragCardIndex(index);
     setDragType("card");
   };
+
 
   const moveTaskStep = (index, direction) => {
     const task = todoList[index];
@@ -74,7 +73,6 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     }
   };
 
-
   const handleDelete = (id) => {
     try {
       dispatch(deleteTodo(id))
@@ -83,8 +81,8 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     }
   }
 
-  const handleSectionDelete = (sectionId) => {
-    dispatch(deleteSection(sectionId));
+  const handleSectionDelete = async (sectionId) => {
+    await dispatch(deleteSection(sectionId));
   };
 
   const handleInlineUpdate = (index, field, value) => {
@@ -115,16 +113,22 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     acc[sectionId] = filteredTodos.filter((item) => item.sectionId === sectionId);
     return acc;
   }, {});
-
+  console.log('dragType :>> ', dragType);
   return (
     <>
       {sections.sections?.map((section) => (
         <div
           draggable
-          onDragStart={() => handleSectionDragStart(section.order)}
+          onDragStart={(e) => handleSectionDragStart(section.order, e)}
           key={section.status}
           onDragOver={allowDrop}
-          onDrop={() => handleDrop(section)}
+          onDrop={() => {
+            if (dragType === "section") {
+              handleSectionDrop(section.order);
+            } else {
+              handleDrop(section);
+            }
+          }}
           className="flex flex-col rounded-xl shadow-md hover:shadow-lg transition border min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-white"
         >
           <div className="p-4 border-b rounded-t-xl font-semibold bg-gray-100 text-gray-800 flex justify-between items-center h-[48px]">
@@ -211,7 +215,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
                     handleDelete={() => handleDelete(item.id)}
                     handleNext={() => moveTaskStep(todoList.indexOf(item), 1)}
                     handlePrevious={() => moveTaskStep(todoList.indexOf(item), -1)}
-                    onDragStart={() => handleDragStart(todoList.indexOf(item))}
+                    onDragStart={(e) => handleDragStart(todoList.indexOf(item), e)}
                   />
                 );
               })

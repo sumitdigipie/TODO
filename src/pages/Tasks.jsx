@@ -119,15 +119,17 @@ const Tasks = () => {
     }
   };
 
-  const handleSectionDragStart = (index) => {
+  const handleSectionDragStart = (index, e) => {
+    e.stopPropagation();
     if (dragCardIndex !== null) return;
     if (dragType === "card") return;
-
     setDragType("section");
+
     setDragSectionIndex(index);
   };
 
   const handleSectionDrop = async (dropIndex) => {
+
     if (dragCardIndex !== null || dragSectionIndex === null || dragSectionIndex === dropIndex) return;
 
     const updatedSections = [...sections.sections];
@@ -231,7 +233,7 @@ const Tasks = () => {
           </div>
           <div className="flex flex-col overflow-x-auto px-4">
             <div className="flex space-x-6 pb-12"
-              onDrop={() => handleSectionDrop(sectionDropIndex)}
+              // onDrop={() => handleSectionDrop(sectionDropIndex)}
               onDragOver={allowDrop}
             >
               <TaskColumn
@@ -242,6 +244,7 @@ const Tasks = () => {
                 setDragCardIndex={setDragCardIndex}
                 dragCardIndex={dragCardIndex}
                 setDragType={setDragType}
+                handleSectionDrop={handleSectionDrop}
                 dragType={dragType}
               />
               <div className="flex flex-col top-0 justify-start items-center border-gray-300 min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-gray-50 transition-all duration-200 p-4">
