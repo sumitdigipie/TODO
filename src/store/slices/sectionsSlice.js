@@ -46,6 +46,10 @@ export const addSection = createAsyncThunk(
         createdAt: Timestamp.now(),
       });
 
+      await updateDoc(docRef, {
+        sectionId: docRef.id,
+      });
+
       return {
         id: docRef.id,
         status,
@@ -63,9 +67,8 @@ export const updateSectionOrder = createAsyncThunk(
   async (sections, { rejectWithValue }) => {
     try {
       const batch = writeBatch(db);
-
       sections.forEach((section) => {
-        const sectionRef = doc(db, 'sections', section.id);
+        const sectionRef = doc(db, 'sections', section.sectionId);
         batch.update(sectionRef, { order: section.order });
       });
 

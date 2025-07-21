@@ -1,19 +1,20 @@
 import React, { useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import Card from './Card';
-import { updateTodo } from '../store/slices/todoSlice';
+import { deleteTodo, updateTodo } from '../store/slices/todoSlice';
 import { updateSectionName } from '../store/slices/sectionsSlice';
+import { toast } from 'react-toastify';
 
 const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIndex, setDragCardIndex, dragCardIndex }) => {
 
   const [editingSection, setEditingSection] = useState(null);
-
+  const [tempTitle, setTempTitle] = useState("");
   const { todoList, isLoading } = useSelector((state) => state.todos);
   const { userList } = useSelector(
     (state) => state.users
   );
   const ticketStages = useMemo(
-    () => sections.sections.map((section) => section.status),
+    () => sections.sections.map((section) => section.sectionId),
     [sections]
   );
   const dispatch = useDispatch();
@@ -23,34 +24,78 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
     e.preventDefault();
   };
 
+  // const handleDrop = (section) => {
+  //   const { order } = section
+  //   setSectionDropIndex(order)
+
+  //   if (dragCardIndex === null) return;
+
+  //   const task = todoList[dragCardIndex];
+
+  //   const nextStep = ticketStages.indexOf(section?.sectionId);
+
+  //   dispatch(updateTodo({ sectionId: task.sectionId, updates: { sectionId: section.sectionId, currentStep: nextStep } }));
+  //   setDragCardIndex(null);
+  // };
+
+  // const handleSectionTitleChange = (order, newTitle) => {
+  //   dispatch(updateSectionName({ id: order, status: newTitle }));
+  // };
+
   const handleDrop = (section) => {
-    const { status, order } = section
-    setSectionDropIndex(order)
+    const { order } = section;
+    setSectionDropIndex(order);
+
     if (dragCardIndex === null) return;
+
     const task = todoList[dragCardIndex];
-    const currentStep = ticketStages.indexOf(status);
-    dispatch(updateTodo({ id: task.id, updates: { status, currentStep } }));
+    const nextStep = ticketStages.indexOf(section?.sectionId);
+
+    dispatch(
+      updateTodo({
+        taskId: task.id,
+        updates: { sectionId: section.sectionId, currentStep: nextStep },
+      })
+    );
+
     setDragCardIndex(null);
   };
 
-  const handleSectionTitleChange = (order, newTitle) => {
-    dispatch(updateSectionName({ id: order, status: newTitle }));
-  };
 
+  // const moveTaskStep = (section, index, direction) => {
+  //   const task = todoList[index];
+  //   if (!task) return;
 
-  const moveTaskStep = (index, direction) => {
+  //   const currentStep = ticketStages.indexOf(task.sectionId);
+  //   const newStep = currentStep + direction;
+  //   console.log('newStep :>> ', newStep);
+  //   if (newStep >= 0 && newStep < ticketStages.length) {
+  //     dispatch(
+  //       updateTodo({
+  //         sectionId: task.sectionId,
+  //         updates: {
+  //           sectionId: section.sectionId,
+  //           currentStep: newStep,
+  //         },
+  //       })
+  //     );
+  //   }
+  // };
+
+  const moveTaskStep = (section, index, direction) => {
     const task = todoList[index];
     if (!task) return;
 
-    const currentStep = ticketStages.indexOf(task.status);
+    const currentStep = ticketStages.indexOf(task.sectionId);
     const newStep = currentStep + direction;
 
     if (newStep >= 0 && newStep < ticketStages.length) {
+      const newSectionId = ticketStages[newStep];
       dispatch(
         updateTodo({
-          id: task.id,
+          taskId: task.id,
           updates: {
-            status: ticketStages[newStep],
+            sectionId: newSectionId,
             currentStep: newStep,
           },
         })
@@ -60,16 +105,43 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
 
   const handleDragStart = (index) => setDragCardIndex(index);
 
+  const handleDelete = (id) => {
+    try {
+      dispatch(deleteTodo(id))
+    } catch (error) {
+      toast.error("Failed to delete task")
+    }
+  }
+
+  const handleInlineUpdate = (index, field, value) => {
+    const task = todoList[index];
+    if (!task || task[field] === value) return;
+
+    try {
+      dispatch(
+        updateTodo({
+          taskId: task.id,
+          updates: {
+            [field]: value,
+          },
+        })
+      );
+      toast.success("Task updated successfully");
+    } catch (error) {
+      toast.error("Failed to update task");
+    }
+  };
+
   const filteredTodos =
     filter !== "All"
       ? todoList.filter((item) => item.assignedTo === filter)
       : todoList;
 
-  const tasksByStatus = ticketStages.reduce((acc, status) => {
-    acc[status] = filteredTodos.filter((item) => item.status === status);
+  const tasksByStatus = ticketStages.reduce((acc, sectionId) => {
+    acc[sectionId] = filteredTodos.filter((item) => item.sectionId === sectionId);
     return acc;
   }, {});
-  console.log('editingSection :>> ', editingSection);
+
   return (
     <>
       {sections.sections?.map((section) => (
@@ -87,23 +159,30 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
                 type="text"
                 className="text-lg bg-white border rounded px-2 py-1 w-full h-[32px] truncate"
                 style={{ minWidth: 0 }}
-                value={section.status}
-                onChange={(e) =>
-                  handleSectionTitleChange(section.id, e.target.value)
-                }
-                onBlur={() => setEditingSection(null)}
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={() => {
+                  if (tempTitle.trim() && tempTitle !== section.status) {
+                    handleSectionTitleChange(section.id, tempTitle);
+                  }
+                  setEditingSection(null);
+                }}
                 autoFocus
               />
             ) : (
               <span
                 className="text-lg cursor-pointer"
-                onClick={() => setEditingSection(section.order)}
+                onClick={() => {
+                  setEditingSection(section.order);
+                  setTempTitle(section.status);
+                }}
               >
                 {section.status}
               </span>
             )}
+
             <span className="text-sm bg-white text-gray-600 px-2 py-0.5 rounded-full shadow-sm ml-3">
-              {tasksByStatus[section.status]?.length || 0}
+              {tasksByStatus[section.sectionId]?.length || 0}
             </span>
           </div>
           <div className="p-4 space-y-4 overflow-y-auto max-h-[70vh] custom-scrollbar">
@@ -115,7 +194,7 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
                 ></div>
               ))
             ) : (
-              tasksByStatus[section.status].map((item) => {
+              tasksByStatus[section.sectionId].map((item) => {
                 const assignedUser = userList.find(
                   (user) => user.id === item.assignedTo
                 );
@@ -136,9 +215,9 @@ const TaskColumn = ({ filter, sections, handleSectionDragStart, setSectionDropIn
                     onUpdate={(field, value) =>
                       handleInlineUpdate(todoList.indexOf(item), field, value)
                     }
-                    handleDelete={() => handleDelete(todoList.indexOf(item))}
-                    handleNext={() => moveTaskStep(todoList.indexOf(item), 1)}
-                    handlePrevious={() => moveTaskStep(todoList.indexOf(item), -1)}
+                    handleDelete={() => handleDelete(item.id)}
+                    handleNext={() => moveTaskStep(section, todoList.indexOf(item), 1)}
+                    handlePrevious={() => moveTaskStep(section, todoList.indexOf(item), -1)}
                     onDragStart={() => handleDragStart(todoList.indexOf(item))}
                   />
                 );

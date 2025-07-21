@@ -7,6 +7,7 @@ import {
   deleteDoc,
   doc,
   collectionGroup,
+  getDoc,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 
@@ -33,7 +34,7 @@ export const addTodo = createAsyncThunk("todos/addTodo", async (task) => {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User not authenticated");
 
-  const newItem = { ...task, status: "Todo", currentStep: 0 };
+  const newItem = { ...task, currentStep: 0 };
   const docRef = await addDoc(collection(db, "tasks"), newItem);
 
   return { id: docRef.id, ...newItem };
@@ -43,6 +44,7 @@ export const deleteTodo = createAsyncThunk(
   "todos/deleteTodo",
   async (taskId) => {
     const userId = auth.currentUser?.uid;
+    console.log('taskId :>> ', taskId);
     if (!userId) throw new Error("User not authenticated");
 
     await deleteDoc(doc(db, "tasks", taskId));
@@ -50,14 +52,68 @@ export const deleteTodo = createAsyncThunk(
   }
 );
 
+// export const updateTodo = createAsyncThunk(
+//   "todos/updateTodo",
+//   async ({ sectionId, updates }) => {
+//     const userId = auth.currentUser?.uid;
+//     if (!userId) throw new Error("User not authenticated");
+
+//     // try {
+
+//     //   const taskDocRef = doc(db, "tasks", sectionId);
+
+//     //   const updatedData = {
+//     //     sectionId: updates.sectionId,  // Replace the old sectionId with the new one
+//     //     currentStep: updates.currentStep,  // Replace the currentStep with the new one
+//     //   };
+
+//     //   await updateDoc(taskDocRef, updatedData);
+
+//     // } catch (error) {
+//     //   console.log('error: ', error);
+//     // }
+
+//     try {
+//       // Query the "tasks" collection for the document that has the matching sectionId
+//       const taskDocRef = doc(db, "tasks", sectionId);  // Fetch the document based on the sectionId
+
+//       // Fetch the document snapshot
+//       const taskDocSnap = await getDoc(taskDocRef);
+//       console.log('taskDocSnap: ', taskDocSnap.data());
+
+//       if (!taskDocSnap.exists()) {
+//         console.log("No task document found with sectionId: ", sectionId);
+//       } else {
+//         console.log("Document found! Proceeding to update...");
+
+//         // Prepare the updates to replace the sectionId and currentStep
+//         const updatedData = {
+//           sectionId: updates.sectionId,
+//           currentStep: updates.currentStep,  // Replace the currentStep with the new one
+//         };
+
+//         // Update the document with the new sectionId and currentStep
+//         await updateDoc(taskDocRef, updatedData);
+//         console.log("Document successfully updated!");
+//       }
+//     } catch (error) {
+//       console.error("Error fetching or updating document:", error);
+//     }
+
+//     return { sectionId, updates };
+//   }
+// );
+
+
 export const updateTodo = createAsyncThunk(
   "todos/updateTodo",
-  async ({ id, updates }) => {
+  async ({ taskId, updates }) => {
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("User not authenticated");
 
-    await updateDoc(doc(db, "tasks", id), updates);
-    return { id, updates };
+    const taskDocRef = doc(db, "tasks", taskId); // Use task ID (document ID)
+    await updateDoc(taskDocRef, updates);
+    return { taskId, updates };
   }
 );
 
@@ -110,21 +166,33 @@ const todoSlice = createSlice({
       })
 
       //Update task
+      // .addCase(updateTodo.fulfilled, (state, action) => {
+      //   const { sectionId, updates } = action.payload;
+      //   const index = state.todoList.findIndex((todo) => todo.sectionId === sectionId);
+
+      //   if (index !== -1) {
+      //     return {
+      //       ...state,
+      //       todoList: state.todoList.map((todo, i) =>
+      //         i === index ? { ...todo, ...updates } : todo
+      //       ),
+      //     };
+      //   }
+      //   return state;
+      // });
+
       .addCase(updateTodo.fulfilled, (state, action) => {
-        const { id, updates } = action.payload;
-        const index = state.todoList.findIndex((todo) => todo.id === id);
+        const { taskId, updates } = action.payload;
+        const index = state.todoList.findIndex((todo) => todo.id === taskId);
 
         if (index !== -1) {
-          return {
-            ...state,
-            todoList: state.todoList.map((todo, i) =>
-              i === index ? { ...todo, ...updates } : todo
-            ),
+          state.todoList[index] = {
+            ...state.todoList[index],
+            ...updates,
           };
         }
-
-        return state;
       });
+
   },
 });
 

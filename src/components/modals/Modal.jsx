@@ -12,7 +12,7 @@ const Modal = ({
   isEditing,
 }) => {
   const dispatch = useDispatch();
-  const { userList, currentUserData } = useSelector((state) => state.users);
+  const { userList } = useSelector((state) => state.users);
 
   useEffect(() => {
     if (isOpen) {
@@ -21,9 +21,6 @@ const Modal = ({
   }, [dispatch, isOpen]);
 
   if (!isOpen) return null;
-
-  const canEdit =
-    currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm px-4 pt-16">
@@ -116,7 +113,7 @@ const Modal = ({
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              {isEditing ? "Update Task" : "Create Task"}
+              Create Task
             </button>
           </div>
         </form>

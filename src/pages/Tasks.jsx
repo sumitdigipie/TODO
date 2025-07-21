@@ -63,6 +63,7 @@ const Tasks = () => {
         return;
       }
 
+      const sectionId = sections?.sections?.[0]?.id;
       setSubmitting(true);
       try {
         if (isEditing) {
@@ -76,10 +77,9 @@ const Tasks = () => {
           setIsEditing(false);
           setEditIndex(null);
         } else {
-          const assignedUser = userList.find((user) => user.uid === userID);
-          if (assignedUser) {
+          if (values.assignedTo) {
             await dispatch(
-              addTodo({ ...values, assignedTo: assignedUser.id })
+              addTodo({ ...values, assignedTo: values.assignedTo, sectionId: sectionId })
             ).unwrap();
             toast.success(addSuccess);
           } else {
@@ -102,7 +102,6 @@ const Tasks = () => {
     handleSubmit,
     values,
   } = formik;
-
 
   const handleAddSection = async () => {
     if (!newSectionName.trim()) {
