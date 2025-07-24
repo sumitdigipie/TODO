@@ -227,9 +227,9 @@ const TaskColumn = ({
                 })}
                 <button
                   onClick={() => handleAddNewTask(section)}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-4 mt-4 text-sm font-medium text-white bg-[#92959c] hover:bg-blue-700 transition duration-150 rounded-lg shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 mt-4 text-sm font-medium text-white bg-[#5e6470] hover:bg-blue-700 transition duration-150 rounded-lg shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
-                  <span className="text-lg font-bold">+</span> Add Task
+                  <span className="text-lg font-bold">+</span> Add task
                 </button>
               </>
             )}

@@ -10,14 +10,12 @@ import Modal from "../components/modals/Modal";
 import toastMessages from "../utils/toastMessages";
 
 import {
-  fetchTodos,
   addTodo,
   updateTodo,
 } from "../store/slices/todoSlice";
-import { fetchAllUsers } from "../store/slices/userSlice";
-import { addSection, fetchSections, updateSectionOrder } from "../store/slices/sectionsSlice";
-import Loader from "../components/common/Loader";
+import { addSection, updateSectionOrder } from "../store/slices/sectionsSlice";
 import TaskColumn from "../components/TaskColumn";
+import { PanelRightOpen } from "lucide-react";
 
 const initialValues = {
   title: "",
@@ -26,14 +24,9 @@ const initialValues = {
   assignedTo: "",
 };
 
-const Tasks = () => {
+const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userList, setIsChatBotOpen, isChatBotOpen }) => {
 
   const dispatch = useDispatch();
-  const sections = useSelector((state) => state.sections);
-  const { todoList, isLoading } = useSelector((state) => state.todos);
-  const { userList, currentUserData, isLoading: isUsersLoading } = useSelector(
-    (state) => state.users
-  );
 
   const {
     addSuccess,
@@ -41,7 +34,6 @@ const Tasks = () => {
     updateSuccess,
   } = toastMessages.todos;
 
-  const [userID, setUserID] = useState(null);
   const [editIndex, setEditIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,7 +57,6 @@ const Tasks = () => {
         return;
       }
 
-      // const sectionId = sections?.sections?.[0]?.id;
       setSubmitting(true);
       try {
         if (isEditing) {
@@ -162,147 +153,137 @@ const Tasks = () => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (userID) {
-      dispatch(fetchTodos());
-    }
-  }, [userID, dispatch]);
-
-  useEffect(() => {
-    dispatch(fetchAllUsers());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(fetchSections());
-  }, [sections.sections.length, todoList]);
-
-  const isPageLoading = isLoading && isUsersLoading;
-
   return (
-    isPageLoading ?
-      (<Loader />) :
-      (
-        <div className="bg-[#F8FAFC] h-screen">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-6 gap-6">
-            <div className="flex gap-2 items-center">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {currentUserData?.firstName} {currentUserData?.lastName}
-              </h1>
-              <div className="text-sm text-gray-600 flex items-center mt-1.5">
-                <span className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
-                  {currentUserData?.role || "User"}
-                </span>
-              </div>
+    <div className="bg-[#F8FAFC]">
+      <div className="flex flex-col sm:flex-row sm:items-start md:items-center md:justify-between gap-4 px-4 py-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">
+            Welcome back, {currentUserData?.firstName} {currentUserData?.lastName}
+          </h1>
+          <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mt-1 md:mt-0 md:ml-3">
+            {currentUserData?.role || "User"}
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+          <div className="relative w-full sm:w-64">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="appearance-none w-full text-sm px-4 py-2.5 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              <option value="All">All Users</option>
+              {userList.map((user) => (
+                <option key={user.id} value={user.uid}>
+                  {user.firstName} {user.lastName}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-              <div className="relative w-full sm:w-64">
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="appearance-none w-full text-sm px-3 py-2.5 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:bg-gray-100 disabled:text-gray-500"
-                >
+          {!isChatBotOpen && (
+            <button
+              onClick={() => setIsChatBotOpen(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-sm"
+              title="Open ChatBot"
+            >
+              <PanelRightOpen size={20} />
+              <span className="ml-2 text-sm font-medium">ChatBot</span>
+            </button>
+          )}
+        </div>
+      </div>
 
-                  <option value="All">All Users</option>
-                  {userList.map((user) => (
-                    <option key={user.id} value={user.uid}>
-                      {user.firstName} {user.lastName}
-                    </option>
-                  ))}
 
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
+      <div className="overflow-x-auto px-2 sm:px-4">
+        <div
+          className="flex gap-4 sm:gap-6 pb-12 w-max min-w-full"
+          onDragOver={allowDrop}
+        >
+          <TaskColumn
+            filter={filter}
+            sections={sections}
+            setIsModalOpen={setIsModalOpen}
+            handleSectionDragStart={handleSectionDragStart}
+            setSectionDropIndex={setSectionDropIndex}
+            setDragCardIndex={setDragCardIndex}
+            dragCardIndex={dragCardIndex}
+            setDragType={setDragType}
+            handleSectionDrop={handleSectionDrop}
+            dragType={dragType}
+            setSectionId={setSectionId}
+          />
+          <div className="flex flex-col top-0 justify-start items-center border-gray-300 min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-gray-50 transition-all duration-200 p-4">
+            {isSectionModalOpen ? (
+              <div className="flex flex-col gap-3 w-full">
+                <input
+                  type="text"
+                  value={newSectionName}
+                  onChange={(e) => setNewSectionName(e.target.value)}
+                  placeholder="Section name"
+                  className="border px-3 py-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                />
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={handleAddSection}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsSectionModalOpen(false);
+                      setNewSectionName("");
+                    }}
+                    className="text-gray-600 hover:text-gray-800 transition"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <button
+                onClick={() => setIsSectionModalOpen(true)}
+                className="flex items-center justify-center w-full gap-2 bg-[#5e6470] hover:bg-[#4b4f59] text-white py-2 px-4 rounded-lg shadow transition"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Add section
+              </button>
+            )}
           </div>
-          <div className="flex flex-col overflow-x-auto px-4">
-            <div className="flex space-x-6 pb-12"
-              onDragOver={allowDrop}
-            >
-              <TaskColumn
-                filter={filter}
-                sections={sections}
-                setIsModalOpen={setIsModalOpen}
-                handleSectionDragStart={handleSectionDragStart}
-                setSectionDropIndex={setSectionDropIndex}
-                setDragCardIndex={setDragCardIndex}
-                dragCardIndex={dragCardIndex}
-                setDragType={setDragType}
-                handleSectionDrop={handleSectionDrop}
-                dragType={dragType}
-                setSectionId={setSectionId}
-              />
-              <div className="flex flex-col top-0 justify-start items-center border-gray-300 min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-gray-50 transition-all duration-200 p-4">
-                {isSectionModalOpen ? (
-                  <div className="flex flex-col gap-3 w-full">
-                    <input
-                      type="text"
-                      value={newSectionName}
-                      onChange={(e) => setNewSectionName(e.target.value)}
-                      placeholder="Section name"
-                      className="border px-3 py-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      autoFocus
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <button
-                        onClick={handleAddSection}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsSectionModalOpen(false);
-                          setNewSectionName("");
-                        }}
-                        className="text-gray-600 hover:text-gray-800 transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setIsSectionModalOpen(true)}
-                    className="flex items-center justify-center w-full gap-2 bg-[#5e6470] hover:bg-[#4b4f59] text-white py-2 px-4 rounded-lg shadow transition"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Add Section
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+        </div>
+      </div>
 
-          <Modal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={handleSubmit}
-            values={values}
-            handleChange={handleChange}
-            isEditing={isEditing}
-            submitting={submitting}
-          />
-        </div >
-      )
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        values={values}
+        handleChange={handleChange}
+        isEditing={isEditing}
+        submitting={submitting}
+      />
+    </div >
   );
 };
 

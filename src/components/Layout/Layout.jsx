@@ -5,7 +5,7 @@ export default function Layout() {
   return (
     <>
       <Header />
-      <main className="bg-[#F8FAFC]">
+      <main className="bg-[#F8FAFC] ">
         <Outlet />
       </main>
     </>
