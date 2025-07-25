@@ -13,6 +13,7 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
     assignName: "",
     sectionName: ""
   });
+  const lastMessageRef = useRef(null);
 
   const textareaRef = useRef(null);
   const dispatch = useDispatch();
@@ -85,6 +86,12 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
     dispatch(fetchSections())
   }, [sections.sections.length, isChatBotOpen])
 
+  useEffect(() => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [messages]);
+
   return (
     <div className="flex flex-col h-full bg-[#F5F5F5]">
       <header className="bg-white border-b px-6 py-4 shadow-sm flex justify-between items-center">
@@ -116,112 +123,116 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
             </div>
           ) : (
             <>
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex items-start gap-3 ${msg.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
-                >
-                  {msg.from !== 'user' && (
-                    <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold select-none">
-                      AI
-                    </div>
-                  )}
+              {messages.map((msg, index) => {
+                const isLast = index === messages.length - 1;
+                return (
                   <div
-                    className={`relative px-4 py-2 rounded-xl text-sm max-w-[75%] shadow-md whitespace-pre-wrap break-words ${msg.from === 'user'
-                      ? 'bg-[#4B5563] text-white rounded-br-none'
-                      : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                      }`}
+                    key={index}
+                    ref={isLast ? lastMessageRef : null}
+                    className={`flex items-start gap-3 ${msg.from === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                   >
-                    {typeof msg.result === 'object' && msg.result !== null ? (
-                      <>
-                        {msg.result.title && (
-                          <div className="font-semibold text-gray-800 mb-1 pr-8">
-                            {msg.result.title}
-                          </div>
-                        )}
-                        {msg.result.description && (
-                          <div className="text-gray-700 pr-8">
-                            {msg.result.description}
-                          </div>
-                        )}
+                    {msg.from !== 'user' && (
+                      <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold select-none">
+                        AI
+                      </div>
+                    )}
+                    <div
+                      className={`relative px-4 py-2 rounded-xl text-sm max-w-[75%] shadow-md whitespace-pre-wrap break-words ${msg.from === 'user'
+                        ? 'bg-[#4B5563] text-white rounded-br-none'
+                        : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                        }`}
+                    >
+                      {typeof msg.result === 'object' && msg.result !== null ? (
+                        <>
+                          {msg.result.title && (
+                            <div className="font-semibold text-gray-800 mb-1 pr-8">
+                              {msg.result.title}
+                            </div>
+                          )}
+                          {msg.result.description && (
+                            <div className="text-gray-700 pr-8">
+                              {msg.result.description}
+                            </div>
+                          )}
 
-                        <div className="mt-4 border-t pt-4 flex justify-center relative">
-                          <div className="relative flex items-center space-x-3">
-                            {openSelectIndex !== index && (
-                              <button
-                                onClick={() => handleTaskAddFromChat(index)}
-                                className="text-gray-500 hover:text-gray-700 transition-colors duration-150"
-                                title="Add Task"
-                              >
-                                <Plus size={18} />
-                              </button>
-                            )}
+                          <div className="mt-4 border-t pt-4 flex justify-center relative">
+                            <div className="relative flex items-center space-x-3">
+                              {openSelectIndex !== index && (
+                                <button
+                                  onClick={() => handleTaskAddFromChat(index)}
+                                  className="text-gray-500 hover:text-gray-700 transition-colors duration-150"
+                                  title="Add Task"
+                                >
+                                  <Plus size={18} />
+                                </button>
+                              )}
 
-                            {openSelectIndex === index && (
-                              <div className="mt-0 inline-flex items-center gap-2 px-3 py-2 border rounded-md w-fit">
-                                <div className="flex flex-col">
-                                  <label className="text-[10px] text-gray-500 ml-1 mb-0.5">Status</label>
-                                  <select
-                                    value={selectedOption.sectionName}
-                                    onChange={handleAssignSelectChange}
-                                    className="border border-gray-300 text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-28"
-                                  >
-                                    <option value="" disabled>Select</option>
-                                    {sections?.sections.map((section) => (
-                                      <option key={section.sectionId} value={section.sectionId}>
-                                        {section.status}
-                                      </option>
-                                    ))}
-                                  </select>
+                              {openSelectIndex === index && (
+                                <div className="mt-0 inline-flex items-center gap-2 px-3 py-2 border rounded-md w-fit">
+                                  <div className="flex flex-col">
+                                    <label className="text-[10px] text-gray-500 ml-1 mb-0.5">Status</label>
+                                    <select
+                                      value={selectedOption.sectionName}
+                                      onChange={handleAssignSelectChange}
+                                      className="border border-gray-300 text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-28"
+                                    >
+                                      <option value="" disabled>Select</option>
+                                      {sections?.sections.map((section) => (
+                                        <option key={section.sectionId} value={section.sectionId}>
+                                          {section.status}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div className="flex flex-col">
+                                    <label className="text-[10px] text-gray-500 ml-1 mb-0.5">Assign to</label>
+                                    <select
+                                      value={selectedOption.assignName}
+                                      onChange={handleUserSelectChange}
+                                      className="border border-gray-300 text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-24"
+                                    >
+                                      <option value="" disabled>Select</option>
+                                      {userList?.map((user) => (
+                                        <option key={user.uid} value={user.uid}>
+                                          {user.firstName} {user.lastName}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div className="flex items-end h-full pt-4 sm:pt-5">
+                                    <button
+                                      onClick={() => handleAddClick(index)}
+                                      className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
+                                    >
+                                      Add
+                                    </button>
+                                  </div>
                                 </div>
-
-                                <div className="flex flex-col">
-                                  <label className="text-[10px] text-gray-500 ml-1 mb-0.5">Assign to</label>
-                                  <select
-                                    value={selectedOption.assignName}
-                                    onChange={handleUserSelectChange}
-                                    className="border border-gray-300 text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-24"
-                                  >
-                                    <option value="" disabled>Select</option>
-                                    {userList?.map((user) => (
-                                      <option key={user.uid} value={user.uid}>
-                                        {user.firstName} {user.lastName}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-
-                                <div className="flex items-end h-full pt-4 sm:pt-5">
-                                  <button
-                                    onClick={() => handleAddClick(index)}
-                                    className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
-                                  >
-                                    Add
-                                  </button>
-                                </div>
-                              </div>
-                            )}
+                              )}
 
 
+                            </div>
                           </div>
-                        </div>
 
 
-                      </>
-                    ) : (
-                      msg.text
+                        </>
+                      ) : (
+                        msg.text
+                      )}
+                    </div>
+
+
+
+                    {msg.from === 'user' && (
+                      <div className="w-9 h-9 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center font-semibold sele">
+                        You
+                      </div>
                     )}
                   </div>
-
-
-
-                  {msg.from === 'user' && (
-                    <div className="w-9 h-9 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center font-semibold sele">
-                      You
-                    </div>
-                  )}
-                </div>
-              ))}
+                )
+              })}
               {isLoading && (
                 <div className="flex items-center gap-2 mt-4 animate-fade-in">
                   <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold select-none">
