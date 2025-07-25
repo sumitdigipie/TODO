@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchAllUsers } from "../store/slices/userSlice";
 import { fetchTodos } from "../store/slices/todoSlice";
 import { fetchSections } from "../store/slices/sectionsSlice";
+import ChatBotWrapper from "../components/ChatBotWrapper";
 
 const Dashboard = () => {
   const [userID, setUserID] = useState(null);
@@ -62,15 +63,10 @@ const Dashboard = () => {
 
       {isChatBotOpen && (
         <div
-          className={`
-      fixed inset-0 z-50 flex lg:relative lg:inset-auto
-      lg:w-[25%] w-full max-w-full
-      transition-transform duration-300 ease-in-out
-      bg-white border-l border-gray-200 shadow-lg lg:shadow-inner
-    `}
+
         >
           <div className="w-full h-full flex flex-col">
-            <AiChatBot setIsChatBotOpen={setIsChatBotOpen} />
+            <ChatBotWrapper setIsChatBotOpen={setIsChatBotOpen} />
           </div>
         </div>
       )}

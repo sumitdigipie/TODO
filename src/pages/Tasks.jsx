@@ -15,7 +15,6 @@ import {
 } from "../store/slices/todoSlice";
 import { addSection, updateSectionOrder } from "../store/slices/sectionsSlice";
 import TaskColumn from "../components/TaskColumn";
-import { PanelRightOpen } from "lucide-react";
 
 const initialValues = {
   title: "",
@@ -24,7 +23,7 @@ const initialValues = {
   assignedTo: "",
 };
 
-const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userList, setIsChatBotOpen, isChatBotOpen }) => {
+const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userList }) => {
 
   const dispatch = useDispatch();
 
@@ -154,23 +153,22 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
   }, []);
 
   return (
-    <div className="bg-[#F8FAFC]">
+    <div>
       <div className="flex flex-col sm:flex-row sm:items-start md:items-center md:justify-between gap-4 px-4 py-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">
-            Welcome back, {currentUserData?.firstName} {currentUserData?.lastName}
+        <div className="flex gap-1 sm:flex-row sm:items-center">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">
+            Welcome, {currentUserData?.firstName} {currentUserData?.lastName}
           </h1>
-          <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mt-1 md:mt-0 md:ml-3">
+          <span className="inline-block bg-blue-500/30 text-blue-800 text-[11px] font-bold px-3 py-1 rounded-full mt-1 ml-1 sm:mt-2 md:mt-2 md:ml-2 backdrop-blur-sm shadow-sm">
             {currentUserData?.role || "User"}
           </span>
         </div>
-
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="appearance-none w-full text-sm px-4 py-2.5 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+              className="appearance-none w-full text-sm px-4 py-2.5 border border-purple-300 rounded-lg bg-white text-purple-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:bg-gray-100 disabled:text-gray-400 transition"
             >
               <option value="All">All Users</option>
               {userList.map((user) => (
@@ -191,17 +189,6 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
               </svg>
             </div>
           </div>
-
-          {!isChatBotOpen && (
-            <button
-              onClick={() => setIsChatBotOpen(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-sm"
-              title="Open ChatBot"
-            >
-              <PanelRightOpen size={20} />
-              <span className="ml-2 text-sm font-medium">ChatBot</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -224,7 +211,7 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
             dragType={dragType}
             setSectionId={setSectionId}
           />
-          <div className="flex flex-col top-0 justify-start items-center border-gray-300 min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-gray-50 transition-all duration-200 p-4">
+          <div className="flex flex-col rounded-lg top-0 justify-start items-center border-gray-300 min-w-[300px] w-full md:w-[320px] lg:w-[360px]  transition-all duration-200 p-2 max-h-max">
             {isSectionModalOpen ? (
               <div className="flex flex-col gap-3 w-full">
                 <input
@@ -271,6 +258,7 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
               </button>
             )}
           </div>
+
         </div>
       </div>
 

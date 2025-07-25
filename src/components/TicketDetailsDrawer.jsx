@@ -62,21 +62,19 @@ const TicketDetailsDrawer = ({
 
   return (
     <div>
-      {/* Overlay */}
       <div
         onClick={onClose}
         className="fixed top-[68px] left-0 right-0 bottom-0 bg-black/30 backdrop-blur-sm z-40"
         aria-hidden="true"
       />
 
-      {/* Drawer */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-labelledby="drawer-title"
         className="fixed top-[68px] right-0 h-[calc(100vh-68px)] w-full sm:max-w-lg md:max-w-xl bg-white z-50 flex flex-col shadow-2xl rounded-l-2xl transition-transform duration-300"
       >
-        {/* Header */}
+
         <header className="sticky top-0 px-6 py-4 bg-white border-b flex items-center justify-between">
           <h2 id="drawer-title" className="text-xl font-semibold text-gray-800">
             Ticket Details
@@ -93,9 +91,7 @@ const TicketDetailsDrawer = ({
           </button>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto bg-gray-50 p-6 space-y-6">
-          {/* Title */}
           <section className="bg-white p-4 rounded-xl shadow-sm space-y-2">
             <label className="block text-sm font-medium text-gray-700">Title</label>
             <input
@@ -107,11 +103,10 @@ const TicketDetailsDrawer = ({
             />
           </section>
 
-          {/* Description */}
           <section className="bg-white p-4 rounded-xl shadow-sm space-y-2">
             <label className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
-              rows={5}
+              rows={8}
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
               placeholder="Add a detailed description..."
@@ -119,7 +114,6 @@ const TicketDetailsDrawer = ({
             />
           </section>
 
-          {/* Assigned To */}
           <section className="bg-white p-4 rounded-xl shadow-sm space-y-2">
             <label className="block text-sm font-medium text-gray-700">Assigned To</label>
             {canEdit ? (
@@ -145,7 +139,6 @@ const TicketDetailsDrawer = ({
           </section>
         </main>
 
-        {/* Footer */}
         <footer className="sticky bottom-0 bg-white border-t px-6 py-4 flex justify-end gap-3">
           <button
             onClick={onClose}

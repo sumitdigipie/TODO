@@ -41,7 +41,7 @@ const Card = ({
       <div
         draggable
         onDragStart={onDragStart}
-        className={`bg-white border-2 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-4 sm:p-5 w-full max-w-full`}
+        className={`bg-[#f9f8fc] border-b-[#ddd6f3] border-2 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-4 sm:p-5 w-full max-w-full`}
       >
         <div
           onClick={() => setIsDrawerOpen(true)}

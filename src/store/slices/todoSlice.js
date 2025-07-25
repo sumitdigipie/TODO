@@ -7,7 +7,6 @@ import {
   deleteDoc,
   doc,
   collectionGroup,
-  getDoc,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 
@@ -34,7 +33,7 @@ export const addTodo = createAsyncThunk("todos/addTodo", async (task) => {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User not authenticated");
 
-  const newItem = { ...task, currentStep: 0 };
+  const newItem = { ...task, currentStep: 0, createdBy: userId };
   const docRef = await addDoc(collection(db, "tasks"), newItem);
 
   return { id: docRef.id, ...newItem };

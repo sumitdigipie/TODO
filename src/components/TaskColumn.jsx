@@ -127,7 +127,7 @@ const TaskColumn = ({
               ? handleSectionDrop(section.order)
               : handleDrop(section)
           }
-          className="flex flex-col rounded-xl shadow-md hover:shadow-lg transition border min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-white"
+          className="flex flex-col rounded-xl shadow-md hover:shadow-lg transition border min-w-[300px] w-full md:w-[320px] lg:w-[360px] bg-[#fdfcff] border-b-[#d3cce3]"
         >
           <div className="p-4 border-b rounded-t-xl font-semibold bg-gray-100 text-gray-800 flex justify-between items-center h-[48px]">
             {editingSection === section.order ? (
@@ -155,7 +155,7 @@ const TaskColumn = ({
               />
             ) : (
               <span
-                className="text-lg cursor-pointer truncate"
+                className="text-lg cursor-pointer truncate "
                 onClick={() => {
                   setEditingSection(section.order);
                   setTempTitle(section.status);

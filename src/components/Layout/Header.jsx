@@ -27,10 +27,10 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-gray-100 to-sky-100 shadow px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-50 w-full">
+    <header className="bg-[#eeeaf3] border-purple-200 shadow-sm px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-50 w-full">
       <div className="flex items-center space-x-3">
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
-          Digipie
+        <h1 className="text-xl sm:text-2xl font-semibold text-purple-900">
+          Task Management
         </h1>
       </div>
       <button
@@ -38,9 +38,8 @@ const Header = () => {
         aria-label={isAuthenticated ? "Logout" : "Login"}
         className={`transition-all duration-200 ease-in-out px-4 sm:px-5 py-2 rounded-full text-sm font-medium shadow-sm ${isAuthenticated
           ? "bg-red-600 text-white hover:bg-red-700"
-          : "bg-indigo-600 text-white hover:bg-indigo-700"
+          : "bg-purple-600 text-white hover:bg-purple-700"
           }`}
-
       >
         {isAuthenticated ? "Logout" : "Login"}
       </button>
