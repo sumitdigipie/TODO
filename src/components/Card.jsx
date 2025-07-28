@@ -7,19 +7,18 @@ import TicketDetailsDrawer from "./TicketDetailsDrawer";
 
 const Card = ({
   title,
-  description,
+  taskId,
   AssignUser,
-  AssignUserId,
   handleDelete,
   progress,
   handleNext,
   handlePrevious,
-  handleDisable,
   onDragStart,
-  onUpdate,
-  sectionIndex,
+  setIsDrawerOpen,
+  setTaskInfoId,
+  isDrawerOpen
 }) => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   const { currentUserData } = useSelector((state) => state.users);
   const sections = useSelector((state) => state.sections);
   const dispatch = useDispatch();
@@ -37,17 +36,20 @@ const Card = ({
     currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
 
   return (
-    <div>
+    <>
       <div
-        draggable
+        draggable={!isDrawerOpen}
         onDragStart={onDragStart}
         className={`bg-[#f9f8fc] border-b-[#ddd6f3] border-2 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-4 sm:p-5 w-full max-w-full`}
       >
         <div
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={() => {
+            setTaskInfoId(taskId)
+            setIsDrawerOpen(true);
+          }}
           className="cursor-pointer"
         >
-          <h1 className="text-lg sm:text-xl text-gray-800 font-semibold break-words">
+          <h1 className="text-lg sm:text-xl text-gray-800 font-semibold break-words truncate">
             {title}
           </h1>
         </div>
@@ -99,17 +101,19 @@ const Card = ({
           </div>
         </div>
       </div>
-      <TicketDetailsDrawer
+      {/* <TicketDetailsDrawer
+        handleCardDetails={handleCardDetails}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title={title}
-        description={description}
+        todoList={todoList}
+        taskInfoId={taskInfoId}
+        // title={title}
+        // description={description}
         progress={progress}
         assignee={AssignUserId}
         onUpdate={onUpdate}
-      />
-
-    </div>
+      /> */}
+    </>
   );
 };
 

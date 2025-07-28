@@ -8,11 +8,11 @@ export default function Layout() {
       <main
         style={{
           backgroundColor: '#eeeaf3',
-          backgroundImage: `
-            linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
+          // backgroundImage: `
+          //   linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+          //   linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+          // `,
+          // backgroundSize: '40px 40px',
         }}
       >
         <Outlet />

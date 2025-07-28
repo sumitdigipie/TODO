@@ -10,6 +10,7 @@ const Modal = ({
   values,
   handleChange,
   isEditing,
+  formik
 }) => {
   const dispatch = useDispatch();
   const { userList } = useSelector((state) => state.users);
@@ -44,13 +45,17 @@ const Modal = ({
               Task Title
             </label>
             <input
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none`}
               type="text"
               name="title"
               placeholder="e.g. Fix login bug"
               onChange={handleChange}
+              onBlur={formik.handleBlur}
               value={values.title}
             />
+            {formik.touched.title && formik.errors.title && (
+              <p className="text-red-500 text-sm mt-1">{formik.errors.title}</p>
+            )}
           </div>
 
           <div>
@@ -58,13 +63,17 @@ const Modal = ({
               Description
             </label>
             <textarea
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none`}
               name="description"
               placeholder="Details about the task..."
               rows={4}
               onChange={handleChange}
+              onBlur={formik.handleBlur}
               value={values.description}
             />
+            {formik.touched.description && formik.errors.description && (
+              <p className="text-red-500 text-sm mt-1">{formik.errors.description}</p>
+            )}
           </div>
 
           <div className="relative">
@@ -75,9 +84,10 @@ const Modal = ({
               <select
                 id="assignedTo"
                 name="assignedTo"
-                className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
+                className={`appearance-none w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10`}
                 value={values.assignedTo}
                 onChange={handleChange}
+                onBlur={formik.handleBlur}
               >
                 <option value="">Select a user</option>
                 {userList.map((user) => (
@@ -98,9 +108,12 @@ const Modal = ({
                 </svg>
               </div>
             </div>
+            {formik.touched.assignedTo && formik.errors.assignedTo && (
+              <p className="text-red-500 text-sm mt-1">{formik.errors.assignedTo}</p>
+            )}
           </div>
 
-
+          {/* Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
@@ -129,6 +142,7 @@ Modal.propTypes = {
   onSubmit: PropTypes.func,
   values: PropTypes.object,
   handleChange: PropTypes.func,
+  formik: PropTypes.object.isRequired,
 };
 
 export default Modal;

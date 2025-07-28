@@ -9,23 +9,19 @@ const TicketDetailsDrawer = ({
   description,
   assignee,
   onUpdate,
+  todoList,
+  taskInfoId
 }) => {
   const { userList, currentUserData } = useSelector((state) => state.users);
 
   const canEdit =
     currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
 
-  const [editedTitle, setEditedTitle] = useState(title);
-  const [editedDescription, setEditedDescription] = useState(description);
-  const [editedAssignee, setEditedAssignee] = useState(assignee);
+  const taskInformation = todoList.find((item) => item.taskId === taskInfoId)
 
-  useEffect(() => {
-    if (isOpen) {
-      setEditedTitle(title);
-      setEditedDescription(description);
-      setEditedAssignee(assignee);
-    }
-  }, [isOpen, title, description, assignee]);
+  const [editedTitle, setEditedTitle] = useState(taskInformation?.title);
+  const [editedDescription, setEditedDescription] = useState(taskInformation?.description);
+  const [editedAssignee, setEditedAssignee] = useState(assignee);
 
   const assignedUser = userList.find((user) => user.uid === editedAssignee);
   const assignedUserName = assignedUser
@@ -38,11 +34,20 @@ const TicketDetailsDrawer = ({
     .toUpperCase();
 
   const handleSave = () => {
-    if (editedTitle !== title) onUpdate("title", editedTitle);
-    if (editedDescription !== description) onUpdate("description", editedDescription);
-    if (editedAssignee !== assignee) onUpdate("assignedTo", editedAssignee);
+    if (editedTitle !== title) onUpdate(taskInfoId, "title", editedTitle);
+    if (editedDescription !== description) onUpdate(taskInfoId, "description", editedDescription);
+    if (editedAssignee !== assignee) onUpdate(taskInfoId, "assignedTo", editedAssignee);
+
     onClose();
   };
+
+  useEffect(() => {
+    if (taskInformation) {
+      setEditedTitle(taskInformation.title);
+      setEditedDescription(taskInformation.description);
+      setEditedAssignee(taskInformation.assignedTo);
+    }
+  }, [taskInfoId, taskInformation]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -64,7 +69,7 @@ const TicketDetailsDrawer = ({
     <div>
       <div
         onClick={onClose}
-        className="fixed top-[68px] left-0 right-0 bottom-0 bg-black/30 backdrop-blur-sm z-40"
+        className="fixed top-[68px] left-0 right-0 bottom-0 bg-black/10 z-40"
         aria-hidden="true"
       />
 
@@ -72,7 +77,7 @@ const TicketDetailsDrawer = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="drawer-title"
-        className="fixed top-[68px] right-0 h-[calc(100vh-68px)] w-full sm:max-w-lg md:max-w-xl bg-white z-50 flex flex-col shadow-2xl rounded-l-2xl transition-transform duration-300"
+        className="fixed top-[68px] right-0 h-[calc(100vh-68px)] w-full sm:max-w-lg md:max-w-xl bg-white z-50 flex flex-col shadow-2xl transition-transform duration-300"
       >
 
         <header className="sticky top-0 px-6 py-4 bg-white border-b flex items-center justify-between">
@@ -161,11 +166,9 @@ const TicketDetailsDrawer = ({
 TicketDetailsDrawer.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  title: PropTypes.string,
-  description: PropTypes.string,
-  progress: PropTypes.string,
-  assignee: PropTypes.string,
   onUpdate: PropTypes.func.isRequired,
+  taskInfoId: PropTypes.string,
+  todoList: PropTypes.array.isRequired,
 };
 
 export default TicketDetailsDrawer;

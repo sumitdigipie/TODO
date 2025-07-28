@@ -41,11 +41,9 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
   const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
   const [filter, setFilter] = useState("All");
   const [submitting, setSubmitting] = useState(false);
-  const [sectionDropIndex, setSectionDropIndex] = useState(null)
   const [dragCardIndex, setDragCardIndex] = useState(null);
   const [dragType, setDragType] = useState(null);
   const [sectionId, setSectionId] = useState(null);
-
 
   const formik = useFormik({
     initialValues,
@@ -93,6 +91,7 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
     handleChange,
     handleSubmit,
     values,
+    resetForm
   } = formik;
 
   const handleAddSection = async () => {
@@ -203,7 +202,6 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
             sections={sections}
             setIsModalOpen={setIsModalOpen}
             handleSectionDragStart={handleSectionDragStart}
-            setSectionDropIndex={setSectionDropIndex}
             setDragCardIndex={setDragCardIndex}
             dragCardIndex={dragCardIndex}
             setDragType={setDragType}
@@ -254,17 +252,20 @@ const Tasks = ({ userID, setUserID, sections, todoList, currentUserData, userLis
                 >
                   <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Add section
+                New section
               </button>
             )}
           </div>
-
         </div>
       </div>
 
       <Modal
+        formik={formik}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          resetForm()
+        }}
         onSubmit={handleSubmit}
         values={values}
         handleChange={handleChange}

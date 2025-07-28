@@ -35,6 +35,7 @@ export const addTodo = createAsyncThunk("todos/addTodo", async (task) => {
 
   const newItem = { ...task, currentStep: 0, createdBy: userId };
   const docRef = await addDoc(collection(db, "tasks"), newItem);
+  await updateDoc(docRef, { taskId: docRef.id });
 
   return { id: docRef.id, ...newItem };
 });
@@ -43,7 +44,6 @@ export const deleteTodo = createAsyncThunk(
   "todos/deleteTodo",
   async (taskId) => {
     const userId = auth.currentUser?.uid;
-    console.log('taskId :>> ', taskId);
     if (!userId) throw new Error("User not authenticated");
 
     await deleteDoc(doc(db, "tasks", taskId));

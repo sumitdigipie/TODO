@@ -5,6 +5,7 @@ import { deleteTodo, updateTodo } from '../store/slices/todoSlice';
 import { deleteSection, updateSectionName } from '../store/slices/sectionsSlice';
 import { toast } from 'react-toastify';
 import { Trash2 } from 'lucide-react';
+import TicketDetailsDrawer from './TicketDetailsDrawer';
 
 const TaskColumn = ({
   filter,
@@ -20,6 +21,8 @@ const TaskColumn = ({
 }) => {
   const [editingSection, setEditingSection] = useState(null);
   const [tempTitle, setTempTitle] = useState('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [taskInfoId, setTaskInfoId] = useState("")
   const { todoList, isLoading } = useSelector((state) => state.todos);
   const { userList } = useSelector((state) => state.users);
   const dispatch = useDispatch();
@@ -98,17 +101,18 @@ const TaskColumn = ({
     setSectionId(sectionId);
   }
 
-  const handleInlineUpdate = (index, field, value) => {
-    const task = todoList[index];
+  const handleInlineUpdate = (taskId, field, value) => {
+    const task = todoList.find((t) => t.id === taskId);
     if (!task || task[field] === value) return;
 
     try {
       dispatch(updateTodo({ taskId: task.id, updates: { [field]: value } }));
-      toast.success('Task updated successfully');
+      toast.success("Task updated successfully");
     } catch {
-      toast.error('Failed to update task');
+      toast.error("Failed to update task");
     }
   };
+
 
   const handleSectionTitleChange = (sectionId, newTitle) => {
     dispatch(updateSectionName({ id: sectionId, status: newTitle }));
@@ -119,7 +123,7 @@ const TaskColumn = ({
       {sections.sections?.map((section) => (
         <div
           key={section.status}
-          draggable
+          draggable={!isDrawerOpen}
           onDragStart={(e) => handleSectionDragStart(section.order, e)}
           onDragOver={allowDrop}
           onDrop={() =>
@@ -133,7 +137,7 @@ const TaskColumn = ({
             {editingSection === section.order ? (
               <input
                 type="text"
-                className="text-lg bg-white border rounded px-2 py-1 w-full h-[32px] truncate"
+                className="text-lg bg-gray-100 border rounded px-2 py-1 w-full h-[32px] truncate"
                 style={{ minWidth: 0 }}
                 value={tempTitle}
                 onChange={(e) => setTempTitle(e.target.value)}
@@ -201,6 +205,9 @@ const TaskColumn = ({
                     <Card
                       key={item.id}
                       title={item.title}
+                      taskId={item.taskId}
+                      setTaskInfoId={setTaskInfoId}
+                      todoList={todoList}
                       progress={item.sectionId}
                       description={item.description}
                       AssignUserId={assignedUser?.uid}
@@ -210,24 +217,27 @@ const TaskColumn = ({
                           : 'Not Assigned'
                       }
                       onUpdate={(field, value) =>
-                        handleInlineUpdate(todoList.indexOf(item), field, value)
+                        handleInlineUpdate(item.id || item.taskId, field, value)
                       }
+
                       handleDelete={() => handleDelete(item.id)}
                       handleNext={() => moveTaskStep(todoList.indexOf(item), 1)}
                       handlePrevious={() =>
                         moveTaskStep(todoList.indexOf(item), -1)
                       }
-                      onDragStart={(e) =>
+                      onDragStart={(e) => {
                         handleDragStart(todoList.indexOf(item), e)
                       }
+                      }
                       sections={sections.sections}
+                      setIsDrawerOpen={setIsDrawerOpen}
                     />
 
                   );
                 })}
                 <button
                   onClick={() => handleAddNewTask(section)}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-4 mt-4 text-sm font-medium text-white bg-[#5e6470] hover:bg-blue-700 transition duration-150 rounded-lg shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 text-sm font-medium text-black hover:text-blue-600 border border-dashed hover:border-blue-600 transition duration-150 rounded-lg shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <span className="text-lg font-bold">+</span> Add task
                 </button>
@@ -236,6 +246,14 @@ const TaskColumn = ({
           </div>
         </div>
       ))}
+
+      <TicketDetailsDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        todoList={todoList}
+        taskInfoId={taskInfoId}
+        onUpdate={handleInlineUpdate}
+      />
     </div>
   );
 };
