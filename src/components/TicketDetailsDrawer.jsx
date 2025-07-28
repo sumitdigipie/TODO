@@ -21,9 +21,10 @@ const TicketDetailsDrawer = ({
 
   const [editedTitle, setEditedTitle] = useState(taskInformation?.title);
   const [editedDescription, setEditedDescription] = useState(taskInformation?.description);
-  const [editedAssignee, setEditedAssignee] = useState(assignee);
+  const [editedAssignee, setEditedAssignee] = useState(taskInformation?.assignedTo);
 
   const assignedUser = userList.find((user) => user.uid === editedAssignee);
+
   const assignedUserName = assignedUser
     ? `${assignedUser.firstName} ${assignedUser.lastName}`
     : "Unassigned";
