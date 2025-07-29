@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearEnhancementResult, enhanceDescription } from "../store/slices/aiEnhancerSlice";
 
 const TicketDetailsDrawer = ({
   isOpen,
@@ -13,6 +14,8 @@ const TicketDetailsDrawer = ({
   taskInfoId
 }) => {
   const { userList, currentUserData } = useSelector((state) => state.users);
+  const { loading, result } = useSelector((state) => state.aiEnhancer);
+  const dispatch = useDispatch();
 
   const canEdit =
     currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
@@ -41,6 +44,17 @@ const TicketDetailsDrawer = ({
 
     onClose();
   };
+
+  const handleEnhanceClick = () => {
+    dispatch(enhanceDescription(editedDescription));
+  };
+
+  useEffect(() => {
+    if (result) {
+      setEditedDescription(result);
+      dispatch(clearEnhancementResult());
+    }
+  }, [result, dispatch]);
 
   useEffect(() => {
     if (taskInformation) {
@@ -109,15 +123,58 @@ const TicketDetailsDrawer = ({
             />
           </section>
 
-          <section className="bg-white p-4 rounded-xl shadow-sm space-y-2">
+          <section className="bg-white p-4 rounded-xl shadow-sm space-y-2 relative">
             <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              rows={8}
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
-              placeholder="Add a detailed description..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none resize-y"
-            />
+            <div className="relative">
+              <textarea
+                rows={8}
+                style={{ minHeight: "4.5rem" }}
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                placeholder="Add a detailed description..."
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none resize-y"
+              />
+              <button
+                onClick={handleEnhanceClick}
+                className="absolute bottom-4 right-3 text-sky-600 hover:text-sky-800"
+                title="Enhance with AI"
+                type="button"
+              >
+                {loading ? (
+                  <svg className="animate-spin h-5 w-5 text-sky-600" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v1m0 14v1m8-8h1M4 12H3m15.36 6.36l.7.7m-13.42 0l-.7.7m13.42-13.42l.7-.7m-13.42 0l-.7-.7M12 8a4 4 0 100 8 4 4 0 000-8z"
+                    />
+                  </svg>
+                )}
+              </button>
+
+            </div>
           </section>
 
           <section className="bg-white p-4 rounded-xl shadow-sm space-y-2">

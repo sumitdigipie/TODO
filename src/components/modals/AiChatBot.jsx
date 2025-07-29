@@ -13,8 +13,12 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
     assignName: "",
     sectionName: ""
   });
-  const lastMessageRef = useRef(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [selectAssignTaskTo, setSelectAssignTaskTo] = useState("");
 
+  const lastMessageRef = useRef(null);
   const textareaRef = useRef(null);
   const dispatch = useDispatch();
 
@@ -56,21 +60,14 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
     }));
   };
 
-  const handleUserSelectChange = (e) => {
-    setSelectedOption(prev => ({
-      ...prev,
-      assignName: e.target.value
-    }));
-  };
-
   const handleAddClick = async (index) => {
     setOpenSelectIndex(null);
     if (index && messages) {
       const addMessage = messages.find((_, indexOfItem) => indexOfItem === index);
       const { title, description } = addMessage.result;
-      const { sectionName, assignName } = selectedOption
+      const { sectionName } = selectedOption
       await dispatch(
-        addTodo({ title, description, assignedTo: assignName, sectionId: sectionName })
+        addTodo({ title, description, assignedTo: assignTaskUserInfo?.uid, sectionId: sectionName })
       ).unwrap();
     }
   };
@@ -82,6 +79,22 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
     }
   };
 
+  const handleSuggestionClick = (user) => {
+    const name = `${user.firstName} ${user.lastName}`;
+    const triggerIndex = text.lastIndexOf('@', cursorPosition);
+    const before = text.slice(0, triggerIndex + 1);
+    const after = text.slice(cursorPosition);
+    const newText = before + name + ' ' + after;
+    setSelectAssignTaskTo(name)
+    setText(newText);
+    setShowSuggestions(false);
+
+    setTimeout(() => {
+      textareaRef.current.selectionStart = textareaRef.current.selectionEnd = (before + name + ' ').length;
+      textareaRef.current.focus();
+    }, 0);
+  };
+
   useEffect(() => {
     dispatch(fetchSections())
   }, [sections.sections.length, isChatBotOpen])
@@ -91,6 +104,8 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
       lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [messages]);
+
+  const assignTaskUserInfo = userList?.find((item) => `${item.firstName} ${item.lastName}` === selectAssignTaskTo);
 
   return (
     <div className="flex flex-col h-full bg-[#F5F5F5]">
@@ -186,22 +201,6 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
                                       </select>
                                     </div>
 
-                                    <div className="flex flex-col">
-                                      <label className="text-[10px] text-gray-500 ml-1 mb-0.5">Assign to</label>
-                                      <select
-                                        value={selectedOption.assignName}
-                                        onChange={handleUserSelectChange}
-                                        className="border border-gray-300 text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-24"
-                                      >
-                                        <option value="" disabled>Select</option>
-                                        {userList?.map((user) => (
-                                          <option key={user.uid} value={user.uid}>
-                                            {user.firstName} {user.lastName}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </div>
-
                                     <div className="flex items-end h-full pt-4 sm:pt-5">
                                       <button
                                         onClick={() => handleAddClick(index)}
@@ -212,8 +211,6 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
                                     </div>
                                   </div>
                                 )}
-
-
                               </div>
                             </div>)
                           }
@@ -222,9 +219,6 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
                         msg.text
                       )}
                     </div>
-
-
-
                     {msg.from === 'user' && (
                       <div className="w-9 h-9 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center font-semibold sele">
                         You
@@ -251,16 +245,49 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
 
       <footer className="bg-white border-t border-gray-200 px-4 py-4">
         <div className="max-w-3xl mx-auto">
-          <div className="relative border border-gray-300 rounded-lg shadow-sm bg-[#FAFAFA] flex flex-col overflow-hidden">
-            <div className="px-4 pt-4 pb-20 sm:pb-16">
+          <div className="relative border border-gray-300 rounded-lg shadow-sm bg-[#FAFAFA] flex flex-col overflow-visible">
+            <div className="px-4 pt-4 pb-20 sm:pb-16 relative">
+              {showSuggestions && (
+                <ul
+                  className="absolute bottom-full mb-2 left-0 w-full bg-white border border-gray-300 rounded-md shadow-lg text-sm max-h-60 overflow-y-auto z-50"
+                >
+                  {suggestions.map((user) => (
+                    <li
+                      key={user.uid}
+                      className="px-4 py-2 hover:bg-blue-50 text-gray-800 cursor-pointer transition-colors"
+                      onClick={() => handleSuggestionClick(user)}
+                    >
+                      <span className="text-blue-600 font-medium">@</span>{user.firstName} {user.lastName}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
               <textarea
                 ref={textareaRef}
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setText(value);
+                  setCursorPosition(e.target.selectionStart);
+
+                  const triggerIndex = value.lastIndexOf('@', e.target.selectionStart);
+                  if (triggerIndex >= 0) {
+                    const query = value.slice(triggerIndex + 1, e.target.selectionStart);
+                    setSelectAssignTaskTo(query)
+                    const filtered = userList?.filter((user) =>
+                      `${user.firstName} ${user.lastName}`.toLowerCase().startsWith(query.toLowerCase())
+                    );
+                    setSuggestions(filtered);
+                    setShowSuggestions(filtered.length > 0);
+                  } else {
+                    setShowSuggestions(false);
+                  }
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask anything..."
                 rows={1}
-                className="w-full resize-none bg-transparent text-sm text-gray-800 placeholder-gray-500 focus:outline-none overflow-auto"
+                className="w-full resize-none bg-transparent text-sm text-gray-800 placeholder-gray-500 focus:outline-none border-none"
                 style={{ minHeight: '36px', maxHeight: '200px' }}
               />
             </div>
@@ -297,6 +324,7 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
           </div>
         </div>
       </footer>
+
     </div>
   );
 };

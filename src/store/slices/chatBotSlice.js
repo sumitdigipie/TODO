@@ -29,7 +29,7 @@ export const sendMessageToBot = createAsyncThunk(
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
     const start = Date.now();
     try {
-      const response = await fetch(BACKEND_URL, {
+      const response = await fetch(`${BACKEND_URL}/openai/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
