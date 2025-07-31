@@ -111,22 +111,6 @@ const todoSlice = createSlice({
         };
       })
 
-      //Update task
-      // .addCase(updateTodo.fulfilled, (state, action) => {
-      //   const { sectionId, updates } = action.payload;
-      //   const index = state.todoList.findIndex((todo) => todo.sectionId === sectionId);
-
-      //   if (index !== -1) {
-      //     return {
-      //       ...state,
-      //       todoList: state.todoList.map((todo, i) =>
-      //         i === index ? { ...todo, ...updates } : todo
-      //       ),
-      //     };
-      //   }
-      //   return state;
-      // });
-
       .addCase(updateTodo.fulfilled, (state, action) => {
         const { taskId, updates } = action.payload;
         const index = state.todoList.findIndex((todo) => todo.id === taskId);

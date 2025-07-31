@@ -2,17 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Copy, Plus, Send } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { sendMessageToBot } from '../../store/slices/chatBotSlice';
-import { addTodo } from '../../store/slices/todoSlice';
+import { addTodo, fetchTodos } from '../../store/slices/todoSlice';
 import { fetchSections } from '../../store/slices/sectionsSlice';
 
 const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
   const [text, setText] = useState('');
   const [selectedModel, setSelectedModel] = useState('chatgpt');
-  const [openSelectIndex, setOpenSelectIndex] = useState(null);
-  const [selectedOption, setSelectedOption] = useState({
-    assignName: "",
-    sectionName: ""
-  });
+
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
@@ -44,31 +40,12 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
         },
       });
 
-      dispatch(sendMessageToBot(trimmedText));
+      dispatch(sendMessageToBot(trimmedText)).unwrap().then((res) => {
+        if (res) {
+          dispatch(fetchTodos())
+        }
+      });
       setText('');
-    }
-  };
-
-  const handleTaskAddFromChat = async (index) => {
-    setOpenSelectIndex(index === openSelectIndex ? null : index);
-  }
-
-  const handleAssignSelectChange = (e) => {
-    setSelectedOption(prev => ({
-      ...prev,
-      sectionName: e.target.value
-    }));
-  };
-
-  const handleAddClick = async (index) => {
-    setOpenSelectIndex(null);
-    if (index && messages) {
-      const addMessage = messages.find((_, indexOfItem) => indexOfItem === index);
-      const { title, description } = addMessage.result;
-      const { sectionName } = selectedOption
-      await dispatch(
-        addTodo({ title, description, assignedTo: assignTaskUserInfo?.uid, sectionId: sectionName })
-      ).unwrap();
     }
   };
 
@@ -106,7 +83,7 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
   }, [messages]);
 
   const assignTaskUserInfo = userList?.find((item) => `${item.firstName} ${item.lastName}` === selectAssignTaskTo);
-
+  console.log('assignTaskUserInfo :>> ', assignTaskUserInfo);
   return (
     <div className="flex flex-col h-full bg-[#F5F5F5]">
       <header className="bg-white border-b px-6 py-4 shadow-sm flex justify-between items-center">
@@ -170,50 +147,6 @@ const AiChatBot = ({ setIsChatBotOpen, isChatBotOpen }) => {
                             </div>
                           )}
 
-                          {!msg.result.title.includes("Clarify user request")
-                            && (<div className="mt-4 border-t pt-4 flex justify-center relative">
-                              <div className="relative flex items-center space-x-3">
-                                {openSelectIndex !== index && (
-                                  <button
-                                    onClick={() => handleTaskAddFromChat(index)}
-                                    className="text-gray-500 hover:text-gray-700 transition-colors duration-150"
-                                    title="Add Task"
-                                  >
-                                    <Plus size={18} />
-                                  </button>
-                                )}
-
-                                {openSelectIndex === index && (
-                                  <div className="mt-0 inline-flex items-center gap-2 px-3 py-2 border rounded-md w-fit">
-                                    <div className="flex flex-col">
-                                      <label className="text-[10px] text-gray-500 ml-1 mb-0.5">Status</label>
-                                      <select
-                                        value={selectedOption.sectionName}
-                                        onChange={handleAssignSelectChange}
-                                        className="border border-gray-300 text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-28"
-                                      >
-                                        <option value="" disabled>Select</option>
-                                        {sections?.sections.map((section) => (
-                                          <option key={section.sectionId} value={section.sectionId}>
-                                            {section.status}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </div>
-
-                                    <div className="flex items-end h-full pt-4 sm:pt-5">
-                                      <button
-                                        onClick={() => handleAddClick(index)}
-                                        className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition"
-                                      >
-                                        Add
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>)
-                          }
                         </>
                       ) : (
                         msg.text

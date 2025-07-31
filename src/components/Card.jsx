@@ -101,18 +101,6 @@ const Card = ({
           </div>
         </div>
       </div>
-      {/* <TicketDetailsDrawer
-        handleCardDetails={handleCardDetails}
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        todoList={todoList}
-        taskInfoId={taskInfoId}
-        // title={title}
-        // description={description}
-        progress={progress}
-        assignee={AssignUserId}
-        onUpdate={onUpdate}
-      /> */}
     </>
   );
 };

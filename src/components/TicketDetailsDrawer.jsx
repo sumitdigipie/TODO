@@ -16,7 +16,6 @@ const TicketDetailsDrawer = ({
   const { userList, currentUserData } = useSelector((state) => state.users);
   const { loading, result } = useSelector((state) => state.aiEnhancer);
   const dispatch = useDispatch();
-
   const canEdit =
     currentUserData?.role === "Admin" || currentUserData?.role === "Manager";
 

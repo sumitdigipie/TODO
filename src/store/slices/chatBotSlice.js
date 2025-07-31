@@ -27,26 +27,22 @@ export const sendMessageToBot = createAsyncThunk(
   async (message, { rejectWithValue }) => {
 
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-    const start = Date.now();
     try {
-      const response = await fetch(`${BACKEND_URL}/openai/generate`, {
+      const response = await fetch(`${BACKEND_URL}chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ prompt: message }),
       });
-
-      const end = Date.now();
-      const responseTime = end - start;
-      console.log('responseTime: ', responseTime);
-
-
+      console.log('message :>> ', message);
+      console.log('response :>> ', response);
       if (!response.ok) {
         throw new Error("Failed to fetch response from chatbot");
       }
 
       const data = await response.json();
+      console.log('data: ', data);
       return data;
     } catch (err) {
       return rejectWithValue(err.message);
@@ -68,11 +64,12 @@ const chatBotSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(sendMessageToBot.fulfilled, (state, action) => {
+        console.log('action.payload :>> ', action.payload);
         state.isLoading = false;
         state.messages.push({
-          text: action.payload.text || action.payload.message || 'AI response',
+          text: action.payload.input || action.payload.message || 'AI response',
           from: 'AI',
-          ...(action.payload.result && { result: action.payload.result }),
+          ...(action.payload.input && { result: action.payload.input }),
         });
       })
       .addCase(sendMessageToBot.rejected, (state) => {
