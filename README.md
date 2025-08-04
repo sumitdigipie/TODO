@@ -36,8 +36,6 @@ TODO is a robust internal task management platform designed for modern teams to 
 - **Database:** Firebase, MongoDB
 - **AI Integration:** LLM API + MCP proxy server/client
 
-_Update with your stack specifics as needed._
-
 ---
 
 ## ⚡ Getting Started
