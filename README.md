@@ -47,7 +47,6 @@ _Update with your stack specifics as needed._
 - Node.js (v18+ recommended)
 - npm or yarn
 - Access to your preferred LLM API (API key required)
-- (Optional) Docker
 
 ### Installation
 
