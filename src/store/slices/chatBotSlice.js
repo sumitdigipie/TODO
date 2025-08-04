@@ -27,8 +27,9 @@ export const sendMessageToBot = createAsyncThunk(
   async (message, { rejectWithValue }) => {
 
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+    console.log('`${BACKEND_URL}/chat` :>> ', `${BACKEND_URL}/chat`);
     try {
-      const response = await fetch(`${BACKEND_URL}chat`, {
+      const response = await fetch(`${BACKEND_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
