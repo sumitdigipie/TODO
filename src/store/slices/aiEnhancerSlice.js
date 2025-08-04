@@ -7,7 +7,7 @@ export const enhanceDescription = createAsyncThunk(
     console.log('description: ', description);
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
     try {
-      const response = await axios.post(`${BACKEND_URL}openai/enhance-description`, { message: description });
+      const response = await axios.post(`${BACKEND_URL}/openai/enhance-description`, { message: description });
       return response.data.enhancedDescription;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Enhancement failed");
