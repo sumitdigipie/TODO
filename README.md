@@ -92,5 +92,3 @@ TODO is a robust internal task management platform designed for modern teams to 
 - Example:  
   “Create a ticket for the website redesign and assign it to testuser and mark in-progress”
 - The AI interprets, creates, and assigns the ticket automatically, reducing manual work.
-
----
